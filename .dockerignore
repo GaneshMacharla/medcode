@@ -1,0 +1,14 @@
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.py[cod]
+*.egg-info
+dist
+build
+baseline_results.json
+validate-submission.sh
+.dockerignore
+openenv_my_env.egg-info
+test_env.py

@@ -483,6 +483,29 @@ class MyEnvironment(Environment):
         Get the current environment state.
 
         Returns:
-            State with episode_id and step_count
+            State with episode_id, step_count, and metadata
         """
+        self._state.metadata = {
+            "done": self._done,
+            "difficulty": self._current_difficulty,
+            "case_id": self._current_case.get("id", "") if self._current_case else "",
+            "reset_count": self._reset_count,
+        }
         return self._state
+
+    def get_task_info(self) -> dict:
+        """Return task metadata for discovery endpoints."""
+        return {
+            "tasks": {
+                diff: {
+                    "count": len(cases),
+                    "description": {
+                        "easy": "Straightforward cases with single diagnoses and direct ICD-10/CPT mapping.",
+                        "medium": "Multi-diagnosis cases with comorbidities, insurance considerations, and partial ambiguity.",
+                        "hard": "Complex compliance dilemmas: upcoding, unbundling, fraud detection, ethical edge cases.",
+                    }.get(diff, ""),
+                }
+                for diff, cases in self._task_cases.items()
+            },
+            "total_cases": sum(len(c) for c in self._task_cases.values()),
+        }

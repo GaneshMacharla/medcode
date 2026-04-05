@@ -30,7 +30,7 @@ A realistic RL environment where AI agents must navigate the complex world of me
 from my_env import MedAction, MedCodeEnv
 
 try:
-    env = MedCodeEnv.from_docker_image("my_env-env:latest")
+    env = MedCodeEnv.from_docker_image("medcoderl:latest")
 
     result = env.reset()
     print(f"Case: {result.observation.case_id}")
@@ -51,33 +51,65 @@ finally:
     env.close()
 ```
 
-## Building the Docker Image
+## 🐳 Building & Running with Docker
 
 ```bash
-docker build -t my_env-env:latest -f server/Dockerfile .
+# Build from project root
+docker build -t medcoderl .
+
+# Run locally
+docker run -p 7680:7680 medcoderl
+
+# Verify it's running
+curl http://localhost:7680/health
 ```
 
 ## Deploying to Hugging Face Spaces
 
+1. Create a new Space on Hugging Face (Docker SDK):
+```bash
+# Via huggingface_hub CLI
+huggingface-cli repo create medcoderl --type space --space-sdk docker
+```
+
+2. Push your code:
+```bash
+git remote add hf https://huggingface.co/spaces/<your-username>/medcoderl
+git push hf main
+```
+
+3. Or use:
 ```bash
 openenv push
 ```
 
+## ⚙️ Environment Variables
+
+The following variables **must** be set before running `inference.py`:
+
+| Variable | Required | Description |
+|---|---|---|
+| `HF_TOKEN` | ✅ | Your Hugging Face / API key (also accepts `OPENAI_API_KEY`) |
+| `API_BASE_URL` | ✅ | The API endpoint for the LLM (default: `https://api.openai.com/v1`) |
+| `MODEL_NAME` | ✅ | The model identifier to use for inference (default: `gpt-4o-mini`) |
+| `CASES_PER_DIFFICULTY` | ❌ | Number of cases per difficulty tier (default: `5`) |
+| `MAX_RUNTIME_SECONDS` | ❌ | Timeout safety limit (default: `1100` — 18.3 min) |
+
 ## 🔬 Environment Details
 
-### Action (MedAction)
+### Action Space (MedAction)
 
 | Field | Type | Description |
 |---|---|---|
-| `diagnosis_codes` | list[str] (1–5) | ICD-10-CM codes |
-| `procedure_codes` | list[str] (0–5) | CPT/HCPCS codes |
-| `decision` | approve/reject/review | Billing compliance decision |
-| `confidence` | float (0.0–1.0) | Agent confidence |
+| `diagnosis_codes` | list[str] (1–5) | ICD-10-CM codes (primary + secondary) |
+| `procedure_codes` | list[str] (0–5) | CPT/HCPCS procedure codes |
+| `decision` | approve / reject / review | Billing compliance decision |
+| `confidence` | float (0.0–1.0) | Agent confidence in coding decision |
 | `reasoning` | str (15–500 chars) | Clinical justification |
-| `modifier_codes` | list[str] (0–3) | Optional CPT modifiers |
-| `risk_flags` | list[str] (0–5) | Compliance risk flags |
+| `modifier_codes` | list[str] (0–3) | Optional CPT modifier codes |
+| `risk_flags` | list[str] (0–5) | Compliance risk flags identified |
 
-### Observation (MedObservation)
+### Observation Space (MedObservation)
 
 | Field | Type | Description |
 |---|---|---|
@@ -91,44 +123,58 @@ openenv push
 | `treatment_cost` | str | low / medium / high |
 | `patient_age` | int | Patient age |
 | `patient_sex` | str | M / F |
-| `provider_specialty` | str | Provider specialty |
+| `provider_specialty` | str | Treating provider specialty |
 | `visit_type` | str | inpatient / outpatient / emergency / telehealth |
 | `comorbidities` | list[str] | Pre-existing conditions |
-| `lab_results` | str/None | Lab findings |
+| `lab_results` | str / null | Relevant lab findings |
 | `medications` | list[str] | Current medications |
 
 ### Reward System
 
 **Grader Components (Deterministic, 0.0–1.0):**
 
-| Component | Weight |
-|---|---|
-| Diagnosis accuracy (ICD-10) | 35% |
-| Procedure accuracy (CPT) | 20% |
-| Decision accuracy | 25% |
-| Reasoning quality | 10% |
-| Risk flag identification | 5% |
-| Confidence calibration | 5% |
+| Component | Weight | Description |
+|---|---|---|
+| Diagnosis accuracy (ICD-10) | 35% | Jaccard + partial prefix matching |
+| Procedure accuracy (CPT) | 20% | Jaccard + partial prefix matching |
+| Decision accuracy | 25% | Exact match (1.0), partial credit for "review" (0.2–0.3) |
+| Reasoning quality | 10% | Length + medical terminology density |
+| Risk flag identification | 5% | Jaccard similarity with expected flags |
+| Confidence calibration | 5% | |conf − correctness| penalty |
 
-**Shaped Penalties** (scaled by difficulty):
-- Wrong approval: -0.25 | Wrong denial: -0.20
-- Upcoding: -0.15 | Missing primary code: -0.15
-- Undercoding: -0.10 | Unnecessary procedure: -0.10
+**Shaped Penalties** (scaled by difficulty — easy ×0.8, medium ×1.0, hard ×1.2):
 
-**Bonuses:** Perfect diagnosis +0.05, Good reasoning +0.03, All flags +0.05
+| Penalty | Value | Trigger |
+|---|---|---|
+| Wrong approval | −0.25 | Approved a case that should be rejected |
+| Wrong denial | −0.20 | Rejected a case that should be approved |
+| Upcoding | −0.15 | Predicted >1 extra procedure codes |
+| Missing primary code | −0.15 | Ground truth primary ICD-10 code not in prediction |
+| Undercoding | −0.10 | <50% of expected diagnoses covered |
+| Unnecessary procedure | −0.10 | Predicted procedures not in ground truth |
+| Low confidence | −0.05 | Confidence < 0.2 |
+
+**Bonuses:**
+
+| Bonus | Value | Trigger |
+|---|---|---|
+| Perfect diagnosis | +0.05 | Diagnosis accuracy ≥ 0.99 |
+| Good reasoning | +0.03 | Reasoning quality ≥ 0.80 |
+| All risk flags | +0.05 | Risk identification ≥ 0.99 |
 
 ## 📋 Tasks (90 cases total)
 
 ### 🟢 Easy (30 cases)
 Straightforward clinical cases with single diagnoses and direct ICD-10/CPT mapping.
-Examples: viral pharyngitis, UTI, ankle sprain, routine wellness exam.
+Examples: viral pharyngitis, UTI, ankle sprain, routine wellness exam, vaccination, tension headache.
 
 ### 🟡 Medium (30 cases)
 Multi-diagnosis cases with comorbidities, insurance considerations, and partial ambiguity.
-Examples: COPD with pneumonia, diabetic neuropathy, cardiac workup.
+Examples: COPD with pneumonia, diabetic neuropathy, cardiac workup, RA flare, MS relapse, hip fracture.
 
 ### 🔴 Hard (30 cases)
 Complex compliance dilemmas: upcoding, unbundling, fraud detection, medically unnecessary treatments, dangerous polypharmacy, ethical edge cases.
+Examples: Medicare fraud (cloned notes, unbundled labs), off-label immunotherapy, DKA in uninsured patient, advanced dementia with aggressive intervention requests.
 
 ## 🚀 Running the Inference Script
 
@@ -139,15 +185,42 @@ export MODEL_NAME="gpt-4o-mini"
 python inference.py
 ```
 
-### Expected Baseline Scores
+### Structured Logging
 
-| Difficulty | Score Range |
-|---|---|
-| Easy | 0.55 – 0.85 |
-| Medium | 0.35 – 0.65 |
-| Hard | 0.15 – 0.45 |
+The inference script emits **structured stdout logs** in `[START]`, `[STEP]`, `[END]` format as required by the OpenEnv evaluation pipeline:
+
+```
+[START] {"task_id": "easy", "model": "gpt-4o-mini", "num_cases": 5}
+[STEP]  {"task_id": "easy", "step": 1, "action": {...}, "reward": 0.72, "done": true, "info": {"case_id": "easy_001", "feedback": "..."}}
+[STEP]  {"task_id": "easy", "step": 2, "action": {...}, "reward": 0.65, "done": true, "info": {"case_id": "easy_002", "feedback": "..."}}
+...
+[END]   {"task_id": "easy", "reward": 0.68, "num_cases": 5}
+[START] {"task_id": "medium", "model": "gpt-4o-mini", "num_cases": 5}
+...
+[END]   {"task_id": "medium", "reward": 0.52, "num_cases": 5}
+[START] {"task_id": "hard", "model": "gpt-4o-mini", "num_cases": 5}
+...
+[END]   {"task_id": "hard", "reward": 0.31, "num_cases": 5}
+```
+
+### Expected Baseline Scores (gpt-4o-mini)
+
+| Difficulty | Expected Avg | Score Range |
+|---|---|---|
+| Easy | ~0.70 | 0.55 – 0.85 |
+| Medium | ~0.50 | 0.35 – 0.65 |
+| Hard | ~0.30 | 0.15 – 0.45 |
+| **Overall** | **~0.50** | **0.35 – 0.65** |
 
 ## Development & Testing
+
+### Run comprehensive tests
+
+```bash
+python test_env.py
+```
+
+Runs 11 tests covering case loading, reset/step/state API, reward range, grader determinism, reward shaping, episode boundaries, and invalid action handling.
 
 ### Run server locally
 
@@ -175,17 +248,30 @@ result = env.step(action)
 print(f"Score: {result.reward}, Done: {result.done}")
 ```
 
+### Pre-submission validation
+
+```bash
+# Validate locally
+./validate-submission.sh https://your-space.hf.space
+
+# Or run openenv validate directly
+openenv validate
+```
+
 ## Project Structure
 
 ```
-my_env/
+medcoderl/
 ├── __init__.py              # Module exports
 ├── README.md                # This file
-├── openenv.yaml             # OpenEnv manifest
+├── openenv.yaml             # OpenEnv manifest (full metadata)
 ├── pyproject.toml           # Dependencies
+├── Dockerfile               # Root Dockerfile for HF Spaces
 ├── client.py                # MedCodeEnv client
 ├── models.py                # MedAction & MedObservation models
-├── inference.py             # Baseline inference script
+├── inference.py             # Baseline inference script (structured logging)
+├── test_env.py              # Comprehensive environment tests (11 tests)
+├── validate-submission.sh   # Pre-submission validator
 ├── tasks/
 │   ├── easy.json            # 30 easy clinical cases
 │   ├── medium.json          # 30 medium clinical cases
@@ -194,7 +280,7 @@ my_env/
     ├── __init__.py           # Server exports
     ├── my_env_environment.py # Core env logic + grader + rewards
     ├── app.py                # FastAPI application
-    ├── Dockerfile            # Container image
+    ├── Dockerfile            # Alternative multi-stage Dockerfile
     └── requirements.txt      # Server dependencies
 ```
 

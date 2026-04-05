@@ -14,6 +14,7 @@ Usage:
 import json
 import os
 import re
+import signal
 import sys
 import time
 from typing import Optional
@@ -23,7 +24,7 @@ from openai import OpenAI
 # Add project root to path so we can import the environment directly
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from server.my_env_environment import MyEnvironment, _load_task_cases
+from server.my_env_environment import MyEnvironment
 from models import MedAction
 
 
@@ -31,15 +32,29 @@ from models import MedAction
 
 API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME = os.environ.get("MODEL_NAME", "gpt-4o-mini")
-HF_TOKEN = os.environ.get("HF_TOKEN")
+# Support both HF_TOKEN and OPENAI_API_KEY for maximum compatibility
+HF_TOKEN = os.environ.get("HF_TOKEN") or os.environ.get("OPENAI_API_KEY")
 
 if not HF_TOKEN:
-    print("ERROR: Set HF_TOKEN environment variable (Your Hugging Face / API key).")
+    print("ERROR: Set HF_TOKEN or OPENAI_API_KEY environment variable.")
     sys.exit(1)
 
 # Number of cases to evaluate per difficulty level
 CASES_PER_DIFFICULTY = int(os.environ.get("CASES_PER_DIFFICULTY", "5"))
 MAX_RETRIES = 2
+
+# Global timeout safety (inference must complete in < 20 minutes)
+MAX_RUNTIME_SECONDS = int(os.environ.get("MAX_RUNTIME_SECONDS", "1100"))  # ~18.3 min
+_start_time = time.time()
+
+
+def _check_timeout():
+    """Check if we've exceeded the maximum runtime."""
+    elapsed = time.time() - _start_time
+    if elapsed > MAX_RUNTIME_SECONDS:
+        print(f"\n⚠ Runtime limit reached ({elapsed:.0f}s > {MAX_RUNTIME_SECONDS}s). Stopping.")
+        return True
+    return False
 
 
 def create_client() -> OpenAI:
@@ -193,15 +208,24 @@ def call_llm(client: OpenAI, obs) -> Optional[dict]:
                 action["procedure_codes"] = [action["procedure_codes"]]
             if "decision" not in action:
                 action["decision"] = "review"
+            if action.get("decision", "").lower() not in ("approve", "reject", "review"):
+                action["decision"] = "review"
             if "confidence" not in action:
                 action["confidence"] = 0.5
-            action["confidence"] = max(0.0, min(1.0, float(action["confidence"])))
+            try:
+                action["confidence"] = max(0.0, min(1.0, float(action["confidence"])))
+            except (TypeError, ValueError):
+                action["confidence"] = 0.5
             if "reasoning" not in action or len(str(action.get("reasoning", ""))) < 15:
                 action["reasoning"] = "Medical coding assessment based on clinical documentation review and compliance guidelines."
             if "modifier_codes" not in action:
                 action["modifier_codes"] = []
+            if isinstance(action.get("modifier_codes"), str):
+                action["modifier_codes"] = [action["modifier_codes"]]
             if "risk_flags" not in action:
                 action["risk_flags"] = []
+            if isinstance(action.get("risk_flags"), str):
+                action["risk_flags"] = [action["risk_flags"]]
 
             return action
 
@@ -226,6 +250,47 @@ def get_fallback_action() -> dict:
     }
 
 
+# ──────────────────────────────────────────────
+#  Structured logging helpers — [START] [STEP] [END]
+# ──────────────────────────────────────────────
+
+def log_start(task_id: str, metadata: Optional[dict] = None):
+    """Emit a [START] structured log line."""
+    entry = {"task_id": task_id}
+    if metadata:
+        entry.update(metadata)
+    print(f"[START] {json.dumps(entry)}", flush=True)
+
+
+def log_step(task_id: str, step: int, action: dict, reward: float, done: bool, info: Optional[dict] = None):
+    """Emit a [STEP] structured log line."""
+    entry = {
+        "task_id": task_id,
+        "step": step,
+        "action": action,
+        "reward": reward,
+        "done": done,
+    }
+    if info:
+        entry["info"] = info
+    print(f"[STEP] {json.dumps(entry)}", flush=True)
+
+
+def log_end(task_id: str, reward: float, metadata: Optional[dict] = None):
+    """Emit an [END] structured log line."""
+    entry = {
+        "task_id": task_id,
+        "reward": reward,
+    }
+    if metadata:
+        entry.update(metadata)
+    print(f"[END] {json.dumps(entry)}", flush=True)
+
+
+# ──────────────────────────────────────────────
+#  Main evaluation loop
+# ──────────────────────────────────────────────
+
 def run_evaluation():
     """Run the baseline evaluation across all difficulty levels."""
     print("=" * 70)
@@ -234,6 +299,7 @@ def run_evaluation():
     print(f"API Base URL: {API_BASE_URL}")
     print(f"Model: {MODEL_NAME}")
     print(f"Cases per difficulty: {CASES_PER_DIFFICULTY}")
+    print(f"Max runtime: {MAX_RUNTIME_SECONDS}s")
     print("=" * 70)
 
     client = create_client()
@@ -243,11 +309,7 @@ def run_evaluation():
     results_by_difficulty = {}
 
     for difficulty in ["easy", "medium", "hard"]:
-        print(f"\n{'─' * 50}")
-        print(f"  Running {difficulty.upper()} tasks")
-        print(f"{'─' * 50}")
-
-        difficulty_scores = []
+        task_id = difficulty
         available = len(env._task_cases.get(difficulty, []))
         num_cases = min(CASES_PER_DIFFICULTY, available)
 
@@ -255,7 +317,24 @@ def run_evaluation():
             print(f"  No cases available for {difficulty}")
             continue
 
+        # Check timeout before starting a difficulty tier
+        if _check_timeout():
+            break
+
+        # ── [START] ──
+        log_start(task_id, {"model": MODEL_NAME, "num_cases": num_cases})
+
+        print(f"\n{'─' * 50}")
+        print(f"  Running {difficulty.upper()} tasks")
+        print(f"{'─' * 50}")
+
+        difficulty_scores = []
+
         for i in range(num_cases):
+            # Check timeout before each case
+            if _check_timeout():
+                break
+
             # Reset environment for this difficulty
             obs = env.reset(task_id=difficulty)
             print(f"\n  Case {i+1}/{num_cases}: {obs.case_id}")
@@ -281,8 +360,22 @@ def run_evaluation():
             try:
                 result_obs = env.step(med_action)
                 score = result_obs.reward if result_obs.reward is not None else 0.0
+                done = result_obs.done if result_obs.done is not None else True
                 difficulty_scores.append(score)
                 all_scores.append(score)
+
+                # ── [STEP] ──
+                log_step(
+                    task_id=task_id,
+                    step=i + 1,
+                    action=action_dict,
+                    reward=round(score, 4),
+                    done=done,
+                    info={
+                        "case_id": obs.case_id,
+                        "feedback": result_obs.feedback if result_obs.feedback else None,
+                    },
+                )
 
                 print(f"    Score: {score:.4f}")
                 print(f"    Decision: {action_dict.get('decision', 'N/A')}")
@@ -307,6 +400,16 @@ def run_evaluation():
                 difficulty_scores.append(0.0)
                 all_scores.append(0.0)
 
+                # ── [STEP] with failure ──
+                log_step(
+                    task_id=task_id,
+                    step=i + 1,
+                    action=action_dict,
+                    reward=0.0,
+                    done=True,
+                    info={"error": str(e)},
+                )
+
             # Rate limiting
             time.sleep(0.5)
 
@@ -318,6 +421,9 @@ def run_evaluation():
                 "count": len(difficulty_scores),
             }
             print(f"\n  {difficulty.upper()} Average: {avg:.4f} ({len(difficulty_scores)} cases)")
+
+            # ── [END] ──
+            log_end(task_id, round(avg, 4), {"num_cases": len(difficulty_scores)})
 
     # Final summary
     print(f"\n{'=' * 70}")
@@ -334,6 +440,8 @@ def run_evaluation():
         overall = 0.0
         print("\n  No scores recorded.")
 
+    elapsed = time.time() - _start_time
+    print(f"\n  Runtime: {elapsed:.1f}s")
     print(f"{'=' * 70}")
 
     # Write results to file
@@ -344,6 +452,7 @@ def run_evaluation():
         "results_by_difficulty": results_by_difficulty,
         "overall_score": round(overall, 4),
         "total_cases": len(all_scores),
+        "runtime_seconds": round(elapsed, 1),
     }
 
     with open("baseline_results.json", "w") as f:

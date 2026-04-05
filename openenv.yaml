@@ -1,6 +1,72 @@
 spec_version: 1
-name: my_env
+name: medcoderl
 type: space
 runtime: fastapi
 app: server.app:app
 port: 7680
+
+description: >
+  MedCodeRL — Medical Coding & Billing Compliance environment.
+  Agents analyze clinical documentation and assign ICD-10/CPT codes,
+  make billing compliance decisions, and identify fraud patterns.
+  90 synthetic cases across 3 difficulty tiers with deterministic grading.
+
+author: privexa
+version: 1.0.0
+tags:
+  - openenv
+  - medical-coding
+  - healthcare
+  - compliance
+
+tasks:
+  easy:
+    description: "Straightforward cases with single diagnoses and direct ICD-10/CPT mapping."
+    count: 30
+  medium:
+    description: "Multi-diagnosis cases with comorbidities, insurance considerations, and partial ambiguity."
+    count: 30
+  hard:
+    description: "Complex compliance dilemmas: upcoding, unbundling, fraud detection, ethical edge cases."
+    count: 30
+
+action_space:
+  type: object
+  model: models.MedAction
+  fields:
+    diagnosis_codes: "list[str] — ICD-10-CM codes (1-5)"
+    procedure_codes: "list[str] — CPT/HCPCS codes (0-5)"
+    decision: "str — approve | reject | review"
+    confidence: "float — 0.0 to 1.0"
+    reasoning: "str — clinical justification (15-500 chars)"
+    modifier_codes: "list[str] — optional CPT modifiers (0-3)"
+    risk_flags: "list[str] — compliance risk flags (0-5)"
+
+observation_space:
+  type: object
+  model: models.MedObservation
+  fields:
+    case_id: "str — unique case identifier"
+    difficulty: "str — easy | medium | hard"
+    clinical_note: "str — full clinical documentation"
+    symptoms: "list[str] — reported symptoms"
+    treatments: "list[str] — treatments administered"
+    insurance_type: "str — Medicare | Medicaid | Private | Uninsured"
+    prior_auth_required: "bool — prior authorization needed"
+    treatment_cost: "str — low | medium | high"
+    patient_age: "int — patient age in years"
+    patient_sex: "str — M | F"
+    provider_specialty: "str — treating provider specialty"
+    visit_type: "str — inpatient | outpatient | emergency | telehealth"
+    comorbidities: "list[str] — pre-existing conditions"
+    lab_results: "str | null — relevant lab findings"
+    medications: "list[str] — current medications"
+
+reward_space:
+  type: float
+  range: [0.0, 1.0]
+  description: >
+    Deterministic composite score: diagnosis accuracy (35%),
+    procedure accuracy (20%), decision accuracy (25%),
+    reasoning quality (10%), risk flag identification (5%),
+    confidence calibration (5%). Shaped with bonuses and penalties.

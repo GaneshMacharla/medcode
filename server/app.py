@@ -37,7 +37,7 @@ app = create_app(
     MyEnvironment,
     MedAction,
     MedObservation,
-    env_name="my_env",
+    env_name="medcoderl",
     max_concurrent_envs=1,
 )
 
@@ -73,6 +73,12 @@ async def health_check():
         version="1.0.0",
         tasks=tasks,
     )
+
+
+@app.get("/health")
+async def health():
+    """Health probe endpoint — used by Docker HEALTHCHECK."""
+    return {"status": "ok"}
 
 
 @app.get("/tasks", response_model=TasksResponse)
