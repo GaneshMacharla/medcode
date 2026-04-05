@@ -1,0 +1,756 @@
+{
+  "difficulty": "medium",
+  "description": "Cases with multiple symptoms, comorbidities, partial ambiguity in coding, and insurance-specific considerations.",
+  "cases": [
+    {
+      "id": "med_001",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "68-year-old male with COPD exacerbation and concurrent pneumonia. Presents with increased dyspnea, productive cough with purulent sputum, and fever 101.2F. Chest X-ray shows right lower lobe infiltrate. Started on levofloxacin and prednisone burst. Nebulizer treatments administered. Oxygen saturation 91% on room air.",
+        "symptoms": ["dyspnea", "productive cough", "purulent sputum", "fever", "wheezing"],
+        "treatments": ["levofloxacin", "prednisone", "nebulizer treatments", "supplemental oxygen"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 68,
+        "patient_sex": "M",
+        "provider_specialty": "Pulmonology",
+        "visit_type": "emergency",
+        "comorbidities": ["COPD", "hypertension", "former smoker"],
+        "lab_results": "WBC: 14,200/uL, CXR: RLL infiltrate, SpO2: 91% RA, Procalcitonin: 0.8 ng/mL",
+        "medications": ["albuterol nebulizer", "levofloxacin 750mg", "prednisone 40mg", "tiotropium"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["J44.1", "J18.9"],
+        "procedure_codes": ["99285"],
+        "decision": "approve",
+        "risk_flags": ["multiple_diagnoses"]
+      }
+    },
+    {
+      "id": "med_002",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "55-year-old female with type 2 diabetes and diabetic neuropathy. Presents for management. A1C 8.4% despite metformin 2000mg daily. Complains of burning and tingling in feet bilaterally. Started on gabapentin for neuropathy. Insulin glargine added for glucose control.",
+        "symptoms": ["burning feet", "tingling in feet", "numbness", "polyuria", "polydipsia"],
+        "treatments": ["gabapentin", "insulin glargine", "metformin continuation"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 55,
+        "patient_sex": "F",
+        "provider_specialty": "Endocrinology",
+        "visit_type": "outpatient",
+        "comorbidities": ["type 2 diabetes", "hypertension", "obesity"],
+        "lab_results": "HbA1c: 8.4%, Fasting glucose: 188 mg/dL, eGFR: 72 mL/min",
+        "medications": ["metformin 1000mg BID", "gabapentin 300mg TID", "insulin glargine 20u QHS", "lisinopril 20mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["E11.40", "E11.65"],
+        "procedure_codes": ["99215"],
+        "decision": "approve",
+        "risk_flags": ["multiple_diagnoses"]
+      }
+    },
+    {
+      "id": "med_003",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "45-year-old male presents to ED with chest pain. Substernal, pressure-like, radiating to left arm. Troponin negative x2. ECG shows no ST changes. Chest pain resolved with nitroglycerin. Diagnosis: unstable angina. Cardiology consult obtained. Admitted for observation and stress testing.",
+        "symptoms": ["chest pain", "left arm pain", "diaphoresis", "shortness of breath"],
+        "treatments": ["nitroglycerin", "aspirin", "cardiology consult", "stress test ordered"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 45,
+        "patient_sex": "M",
+        "provider_specialty": "Emergency Medicine",
+        "visit_type": "emergency",
+        "comorbidities": ["hyperlipidemia", "family history of CAD", "smoker"],
+        "lab_results": "Troponin I: <0.04 ng/mL x2, ECG: NSR no ST changes, BMP: normal",
+        "medications": ["aspirin 325mg", "nitroglycerin SL", "atorvastatin 40mg", "metoprolol 25mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["I20.0"],
+        "procedure_codes": ["99285"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment"]
+      }
+    },
+    {
+      "id": "med_004",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "72-year-old female with osteoarthritis of both knees. Failed conservative management with NSAIDs and physical therapy over 6 months. Bilateral knee X-rays show moderate joint space narrowing. Requests corticosteroid injection. Right knee injection performed under fluoroscopic guidance.",
+        "symptoms": ["bilateral knee pain", "stiffness", "difficulty walking", "crepitus"],
+        "treatments": ["corticosteroid injection right knee", "continued physical therapy"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 72,
+        "patient_sex": "F",
+        "provider_specialty": "Orthopedics",
+        "visit_type": "outpatient",
+        "comorbidities": ["osteoarthritis", "hypertension", "osteoporosis"],
+        "lab_results": "X-ray bilateral knees: Moderate joint space narrowing, osteophyte formation",
+        "medications": ["acetaminophen 1000mg TID", "meloxicam 15mg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["M17.0"],
+        "procedure_codes": ["20611", "77002"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "med_005",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "38-year-old female presents with migraine with aura. Reports 3-4 migraines per month lasting 12-24 hours. Visual aura precedes headache. Failed OTC medications. Started on sumatriptan for acute attacks and topiramate for prevention.",
+        "symptoms": ["severe unilateral headache", "visual aura", "nausea", "photophobia", "phonophobia"],
+        "treatments": ["sumatriptan", "topiramate"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 38,
+        "patient_sex": "F",
+        "provider_specialty": "Neurology",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["sumatriptan 50mg PRN", "topiramate 25mg BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["G43.109"],
+        "procedure_codes": ["99214"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "med_006",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "60-year-old male with chronic kidney disease stage 3b and uncontrolled hypertension. BP 168/98 despite amlodipine 10mg. eGFR 38 mL/min. Added losartan with close monitoring of potassium and creatinine. Nephrology referral placed.",
+        "symptoms": ["headache", "fatigue", "mild peripheral edema"],
+        "treatments": ["losartan added", "amlodipine continuation", "nephrology referral"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 60,
+        "patient_sex": "M",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": ["CKD stage 3b", "hypertension", "type 2 diabetes"],
+        "lab_results": "eGFR: 38 mL/min, Cr: 1.8 mg/dL, K: 4.6 mEq/L, BP: 168/98",
+        "medications": ["amlodipine 10mg daily", "losartan 50mg daily", "metformin 500mg BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["N18.3", "I10"],
+        "procedure_codes": ["99215"],
+        "decision": "approve",
+        "risk_flags": ["multiple_diagnoses"]
+      }
+    },
+    {
+      "id": "med_007",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "8-year-old with acute asthma exacerbation. Wheezing, tachypnea, accessory muscle use. Peak flow 60% of predicted. Given 3 rounds of albuterol nebulizer and oral prednisone. Improved to 80% peak flow. Discharged home with action plan.",
+        "symptoms": ["wheezing", "shortness of breath", "cough", "chest tightness"],
+        "treatments": ["albuterol nebulizer x3", "prednisone oral", "asthma action plan"],
+        "insurance_type": "Medicaid",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 8,
+        "patient_sex": "M",
+        "provider_specialty": "Emergency Medicine",
+        "visit_type": "emergency",
+        "comorbidities": ["asthma", "allergic rhinitis"],
+        "lab_results": "Peak flow: 60% predicted (pre), 80% predicted (post), SpO2: 94%",
+        "medications": ["albuterol nebulizer", "prednisone 30mg", "fluticasone MDI"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["J45.31"],
+        "procedure_codes": ["99284"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "med_008",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "50-year-old female with newly diagnosed breast mass. Palpable 2.5cm mass in right upper outer quadrant. Mammogram shows BIRADS 4. Ultrasound-guided core needle biopsy performed. Awaiting pathology results. Patient counseled about next steps.",
+        "symptoms": ["breast lump", "mild tenderness"],
+        "treatments": ["ultrasound-guided core needle biopsy"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 50,
+        "patient_sex": "F",
+        "provider_specialty": "General Surgery",
+        "visit_type": "outpatient",
+        "comorbidities": ["family history of breast cancer"],
+        "lab_results": "Mammogram: BIRADS 4, 2.5cm mass RUQ. Ultrasound: solid hypoechoic mass",
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["N63.10"],
+        "procedure_codes": ["19083"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment"]
+      }
+    },
+    {
+      "id": "med_009",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "35-year-old male with generalized anxiety disorder and panic attacks. PHQ-9: 6, GAD-7: 14. Reports 2-3 panic attacks per week. Currently on escitalopram 10mg. Dose increased to 20mg. CBT referral reinforced. Low-dose clonazepam 0.25mg PRN discussed for severe attacks.",
+        "symptoms": ["excessive worry", "panic attacks", "palpitations", "insomnia", "muscle tension"],
+        "treatments": ["escitalopram dose increase", "CBT referral", "clonazepam PRN"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 35,
+        "patient_sex": "M",
+        "provider_specialty": "Psychiatry",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "GAD-7: 14 (moderate), PHQ-9: 6 (mild), TSH: 2.1 (normal)",
+        "medications": ["escitalopram 20mg daily", "clonazepam 0.25mg PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["F41.1", "F41.0"],
+        "procedure_codes": ["99214"],
+        "decision": "approve",
+        "risk_flags": ["controlled_substance"]
+      }
+    },
+    {
+      "id": "med_010",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "62-year-old female with persistent atrial fibrillation. Rate controlled on metoprolol. CHADS2-VASc score 4. Started on apixaban for stroke prevention. Echocardiogram shows normal EF 60%, mild left atrial enlargement. Cardioversion discussed but deferred.",
+        "symptoms": ["palpitations", "occasional dizziness", "fatigue"],
+        "treatments": ["apixaban", "metoprolol continuation", "rate control strategy"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 62,
+        "patient_sex": "F",
+        "provider_specialty": "Cardiology",
+        "visit_type": "outpatient",
+        "comorbidities": ["atrial fibrillation", "hypertension", "type 2 diabetes"],
+        "lab_results": "Echo: EF 60%, mild LAE. ECG: AFib rate 78. CBC/CMP: normal",
+        "medications": ["metoprolol 50mg BID", "apixaban 5mg BID", "lisinopril 20mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["I48.1"],
+        "procedure_codes": ["99215"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "med_011",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "48-year-old male with gout flare and concurrent hypertension. Acute monoarticular arthritis of right first MTP joint. Joint is erythematous, swollen, exquisitely tender. Serum uric acid 9.8 mg/dL. Started colchicine and indomethacin for acute flare. Allopurinol initiation planned after flare resolves.",
+        "symptoms": ["severe toe pain", "joint swelling", "redness", "inability to bear weight"],
+        "treatments": ["colchicine", "indomethacin", "future allopurinol"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 48,
+        "patient_sex": "M",
+        "provider_specialty": "Rheumatology",
+        "visit_type": "outpatient",
+        "comorbidities": ["hypertension", "hyperlipidemia", "obesity"],
+        "lab_results": "Uric acid: 9.8 mg/dL, ESR: 48 mm/hr, CRP: 3.2 mg/dL",
+        "medications": ["colchicine 0.6mg BID", "indomethacin 50mg TID", "losartan 50mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["M10.071", "I10"],
+        "procedure_codes": ["99214"],
+        "decision": "approve",
+        "risk_flags": ["multiple_diagnoses"]
+      }
+    },
+    {
+      "id": "med_012",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "30-year-old female with suspected celiac disease. Chronic diarrhea, bloating, and weight loss for 6 months. Tissue transglutaminase IgA elevated at 85 U/mL. EGD with duodenal biopsy recommended to confirm diagnosis.",
+        "symptoms": ["chronic diarrhea", "bloating", "weight loss", "fatigue", "abdominal pain"],
+        "treatments": ["EGD with biopsy recommended", "dietary counseling pending"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "medium",
+        "patient_age": 30,
+        "patient_sex": "F",
+        "provider_specialty": "Gastroenterology",
+        "visit_type": "outpatient",
+        "comorbidities": ["iron deficiency anemia"],
+        "lab_results": "tTG IgA: 85 U/mL (>20 positive), Total IgA: normal, Hgb: 10.5, Ferritin: 8",
+        "medications": ["ferrous sulfate 325mg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["K90.0"],
+        "procedure_codes": ["43239"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment"]
+      }
+    },
+    {
+      "id": "med_013",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "75-year-old male with benign prostatic hyperplasia and lower urinary tract symptoms. IPSS score 22 (severe). Failed tamsulosin monotherapy. Finasteride added. PSA 2.8 ng/mL. Digital rectal exam: enlarged, smooth prostate. No nodules.",
+        "symptoms": ["urinary frequency", "nocturia", "weak stream", "incomplete emptying", "urgency"],
+        "treatments": ["finasteride added", "tamsulosin continuation"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 75,
+        "patient_sex": "M",
+        "provider_specialty": "Urology",
+        "visit_type": "outpatient",
+        "comorbidities": ["BPH", "hypertension"],
+        "lab_results": "PSA: 2.8 ng/mL, IPSS: 22, Post-void residual: 120 mL",
+        "medications": ["tamsulosin 0.4mg daily", "finasteride 5mg daily", "amlodipine 5mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["N40.1"],
+        "procedure_codes": ["99214"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "med_014",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "52-year-old female with rheumatoid arthritis flare. Bilateral hand joint swelling, morning stiffness >1 hour. Currently on methotrexate 15mg weekly. DAS28 score 4.8 (moderate-high activity). Considering addition of biologic DMARD. Labs show elevated ESR and CRP.",
+        "symptoms": ["bilateral hand swelling", "morning stiffness", "joint pain", "fatigue", "grip weakness"],
+        "treatments": ["methotrexate continuation", "biologic DMARD consideration", "prednisone bridge"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 52,
+        "patient_sex": "F",
+        "provider_specialty": "Rheumatology",
+        "visit_type": "outpatient",
+        "comorbidities": ["rheumatoid arthritis"],
+        "lab_results": "ESR: 42, CRP: 2.8, RF: positive, Anti-CCP: positive, DAS28: 4.8",
+        "medications": ["methotrexate 15mg weekly", "folic acid 1mg daily", "prednisone 10mg taper"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["M05.79"],
+        "procedure_codes": ["99215"],
+        "decision": "review",
+        "risk_flags": ["high_cost_treatment", "prior_auth_needed"]
+      }
+    },
+    {
+      "id": "med_015",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "40-year-old male with obstructive sleep apnea. AHI 28 on sleep study (moderate). Excessive daytime sleepiness, Epworth score 16. BMI 34. CPAP prescribed. Weight loss counseling provided. Follow-up in 6 weeks for CPAP compliance check.",
+        "symptoms": ["excessive daytime sleepiness", "loud snoring", "witnessed apneas", "morning headaches"],
+        "treatments": ["CPAP therapy", "weight loss counseling"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "medium",
+        "patient_age": 40,
+        "patient_sex": "M",
+        "provider_specialty": "Pulmonology",
+        "visit_type": "outpatient",
+        "comorbidities": ["obesity", "hypertension"],
+        "lab_results": "Polysomnography: AHI 28, lowest SpO2 82%, Epworth: 16/24",
+        "medications": ["CPAP 10 cmH2O"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["G47.33"],
+        "procedure_codes": ["95810"],
+        "decision": "approve",
+        "risk_flags": ["prior_auth_needed"]
+      }
+    },
+    {
+      "id": "med_016",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "28-year-old female with iron deficiency anemia refractory to oral iron. Hgb 8.2 g/dL, ferritin 4 ng/mL. GI workup negative. Heavy menstrual bleeding identified as cause. IV iron infusion (ferric carboxymaltose) administered. Gynecology referral for menorrhagia management.",
+        "symptoms": ["fatigue", "dizziness", "pallor", "heavy menstrual bleeding", "shortness of breath on exertion"],
+        "treatments": ["IV ferric carboxymaltose infusion", "gynecology referral"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 28,
+        "patient_sex": "F",
+        "provider_specialty": "Hematology",
+        "visit_type": "outpatient",
+        "comorbidities": ["menorrhagia"],
+        "lab_results": "Hgb: 8.2, Ferritin: 4, TIBC: 450, Iron sat: 6%, MCV: 68, Reticulocyte: 1.0%",
+        "medications": ["ferric carboxymaltose 750mg IV"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["D50.0", "N92.0"],
+        "procedure_codes": ["96365"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment", "multiple_diagnoses"]
+      }
+    },
+    {
+      "id": "med_017",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "58-year-old male with new diagnosis of atypical chest pain and abnormal stress test. Nuclear stress test shows reversible perfusion defect in LAD territory. Cardiac catheterization recommended. Patient on aspirin, statin, and beta-blocker. Pre-operative clearance obtained.",
+        "symptoms": ["exertional chest pain", "dyspnea on exertion", "fatigue"],
+        "treatments": ["cardiac catheterization recommended", "medical optimization"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 58,
+        "patient_sex": "M",
+        "provider_specialty": "Cardiology",
+        "visit_type": "outpatient",
+        "comorbidities": ["hypertension", "hyperlipidemia", "type 2 diabetes"],
+        "lab_results": "Stress MPI: reversible defect LAD territory, EF 55%, ECG: nonspecific ST changes",
+        "medications": ["aspirin 81mg", "atorvastatin 80mg", "metoprolol 50mg BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["I25.10"],
+        "procedure_codes": ["93458"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment", "prior_auth_needed"]
+      }
+    },
+    {
+      "id": "med_018",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "65-year-old female with new-onset seizure. Found unresponsive with tonic-clonic movements lasting 3 minutes. Post-ictal confusion. CT head negative for acute process. MRI brain ordered. Started on levetiracetam. Neurology consult obtained. EEG scheduled.",
+        "symptoms": ["witnessed seizure", "post-ictal confusion", "tongue bite", "urinary incontinence"],
+        "treatments": ["levetiracetam", "MRI brain", "EEG ordered", "neurology consult"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 65,
+        "patient_sex": "F",
+        "provider_specialty": "Emergency Medicine",
+        "visit_type": "emergency",
+        "comorbidities": ["hypertension"],
+        "lab_results": "CT Head: No acute intracranial abnormality, CBC/CMP: normal, glucose: 105",
+        "medications": ["levetiracetam 500mg BID", "amlodipine 10mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["R56.9"],
+        "procedure_codes": ["99285"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment"]
+      }
+    },
+    {
+      "id": "med_019",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "42-year-old male with Crohn's disease flare. Abdominal pain, bloody diarrhea 6-8x/day, weight loss 8 lbs. Currently on mesalamine. CT abdomen shows thickening of terminal ileum, no abscess. Transitioning to azathioprine. Discussed biologic therapy if no improvement.",
+        "symptoms": ["abdominal pain", "bloody diarrhea", "weight loss", "fatigue", "low-grade fever"],
+        "treatments": ["azathioprine", "mesalamine continuation", "nutritional support"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 42,
+        "patient_sex": "M",
+        "provider_specialty": "Gastroenterology",
+        "visit_type": "outpatient",
+        "comorbidities": ["Crohn's disease"],
+        "lab_results": "CRP: 4.5, ESR: 38, Albumin: 3.0, Hgb: 11.2, Fecal calprotectin: 850 ug/g",
+        "medications": ["mesalamine 1.2g BID", "azathioprine 150mg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["K50.10"],
+        "procedure_codes": ["99215"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "med_020",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "70-year-old female with hip fracture after fall at home. X-ray confirms displaced femoral neck fracture. Orthopedic surgery recommends hemiarthroplasty. Pre-operative labs and cardiac clearance obtained. Surgery scheduled for tomorrow. DVT prophylaxis initiated.",
+        "symptoms": ["hip pain", "inability to bear weight", "shortened externally rotated leg"],
+        "treatments": ["hemiarthroplasty planned", "DVT prophylaxis", "pain management"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 70,
+        "patient_sex": "F",
+        "provider_specialty": "Orthopedics",
+        "visit_type": "inpatient",
+        "comorbidities": ["osteoporosis", "hypertension", "hypothyroidism"],
+        "lab_results": "X-ray: displaced femoral neck fracture, CBC: normal, BMP: normal, PT/INR: normal",
+        "medications": ["morphine PCA", "enoxaparin 40mg SQ", "levothyroxine 50mcg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["S72.001", "W19"],
+        "procedure_codes": ["27236"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment"]
+      }
+    },
+    {
+      "id": "med_021",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "55-year-old male with newly diagnosed hepatitis C, genotype 1a. Viral load 2.1 million IU/mL. No cirrhosis on FibroScan (F1). Treatment-naive. Started on sofosbuvir/velpatasvir for 12 weeks. Baseline labs obtained. Counseled on adherence and alcohol avoidance.",
+        "symptoms": ["fatigue", "mild RUQ discomfort"],
+        "treatments": ["sofosbuvir/velpatasvir 12-week course"],
+        "insurance_type": "Medicaid",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 55,
+        "patient_sex": "M",
+        "provider_specialty": "Hepatology",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "HCV RNA: 2,100,000 IU/mL, Genotype 1a, FibroScan: 6.2 kPa (F1), ALT: 68, AST: 52",
+        "medications": ["sofosbuvir/velpatasvir 400/100mg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["B18.2"],
+        "procedure_codes": ["99215"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment", "prior_auth_needed"]
+      }
+    },
+    {
+      "id": "med_022",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "33-year-old female G2P1 at 12 weeks gestation for first prenatal visit. Ultrasound confirms viable singleton pregnancy. Nuchal translucency normal at 1.5mm. Routine prenatal labs obtained. Started on prenatal vitamins. No high-risk features identified.",
+        "symptoms": ["morning nausea", "breast tenderness", "fatigue"],
+        "treatments": ["prenatal vitamins", "routine prenatal care"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 33,
+        "patient_sex": "F",
+        "provider_specialty": "Obstetrics",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "US: viable singleton, NT: 1.5mm, CBC: normal, Blood type: A+, Rubella immune, HIV neg",
+        "medications": ["prenatal vitamins daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["Z34.01"],
+        "procedure_codes": ["99214", "76801"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "med_023",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "46-year-old male with newly diagnosed type 2 diabetes and hyperlipidemia. Fasting glucose 210 mg/dL, A1C 9.2%. Total cholesterol 268, LDL 178. Started on metformin, atorvastatin, and lifestyle modifications. Diabetic education referral placed. Return in 3 months.",
+        "symptoms": ["polyuria", "polydipsia", "blurred vision", "fatigue"],
+        "treatments": ["metformin", "atorvastatin", "lifestyle counseling", "diabetic education"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 46,
+        "patient_sex": "M",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": ["obesity"],
+        "lab_results": "FBS: 210, A1C: 9.2%, TC: 268, LDL: 178, HDL: 38, TG: 260, Cr: 0.9",
+        "medications": ["metformin 500mg BID", "atorvastatin 40mg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["E11.65", "E78.5"],
+        "procedure_codes": ["99215"],
+        "decision": "approve",
+        "risk_flags": ["multiple_diagnoses"]
+      }
+    },
+    {
+      "id": "med_024",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "60-year-old female with chronic low back pain and lumbar radiculopathy. MRI shows L4-L5 disc herniation with nerve root compression. Failed 6 weeks of conservative management including PT and NSAIDs. Epidural steroid injection recommended. Pain score 7/10.",
+        "symptoms": ["low back pain", "left leg pain", "numbness in left foot", "difficulty walking"],
+        "treatments": ["lumbar epidural steroid injection", "continued PT"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": true,
+        "treatment_cost": "medium",
+        "patient_age": 60,
+        "patient_sex": "F",
+        "provider_specialty": "Pain Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": ["degenerative disc disease", "hypertension"],
+        "lab_results": "MRI lumbar: L4-L5 disc herniation with left L5 nerve root compression",
+        "medications": ["gabapentin 300mg TID", "naproxen 500mg BID", "cyclobenzaprine 10mg QHS"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["M51.16", "M54.31"],
+        "procedure_codes": ["62323"],
+        "decision": "approve",
+        "risk_flags": ["prior_auth_needed", "multiple_diagnoses"]
+      }
+    },
+    {
+      "id": "med_025",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "22-year-old male with appendicitis. RLQ pain x24 hours, migrated from periumbilical area. Rebound tenderness positive. CT abdomen confirms acute appendicitis without perforation. WBC 14,000. Laparoscopic appendectomy performed without complication.",
+        "symptoms": ["RLQ pain", "nausea", "anorexia", "low-grade fever", "rebound tenderness"],
+        "treatments": ["laparoscopic appendectomy"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 22,
+        "patient_sex": "M",
+        "provider_specialty": "General Surgery",
+        "visit_type": "emergency",
+        "comorbidities": [],
+        "lab_results": "WBC: 14,000, CT Abdomen: Acute appendicitis, no perforation, no abscess",
+        "medications": ["cefoxitin 2g IV", "morphine 4mg IV PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["K35.80"],
+        "procedure_codes": ["44970"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "med_026",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "67-year-old female with diabetic retinopathy screening. Fundoscopic exam reveals moderate non-proliferative diabetic retinopathy bilaterally. No macular edema. OCT macula normal. A1C 7.8%. Recommended tighter glucose control and follow-up in 6 months.",
+        "symptoms": ["mild blurry vision"],
+        "treatments": ["retinal photography", "OCT", "glucose optimization counseling"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 67,
+        "patient_sex": "F",
+        "provider_specialty": "Ophthalmology",
+        "visit_type": "outpatient",
+        "comorbidities": ["type 2 diabetes", "hypertension"],
+        "lab_results": "Fundoscopy: moderate NPDR bilaterally, OCT: no DME, A1C: 7.8%",
+        "medications": ["metformin 1000mg BID", "glipizide 10mg BID", "lisinopril 20mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["E11.339"],
+        "procedure_codes": ["92134", "92250"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "med_027",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "38-year-old female with recurrent kidney stones. CT shows 7mm left ureteral stone with mild hydronephrosis. Previous stone was calcium oxalate. Managed conservatively with tamsulosin and hydration, but stone not passing after 3 weeks. Urology recommends ureteroscopy with laser lithotripsy.",
+        "symptoms": ["left flank pain", "hematuria", "nausea", "urinary urgency"],
+        "treatments": ["ureteroscopy with laser lithotripsy planned", "tamsulosin", "hydration"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 38,
+        "patient_sex": "F",
+        "provider_specialty": "Urology",
+        "visit_type": "outpatient",
+        "comorbidities": ["recurrent nephrolithiasis"],
+        "lab_results": "CT KUB: 7mm left distal ureteral stone, mild left hydronephrosis, UA: hematuria",
+        "medications": ["tamsulosin 0.4mg daily", "ketorolac 10mg PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["N20.1", "N13.1"],
+        "procedure_codes": ["52356"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment", "prior_auth_needed"]
+      }
+    },
+    {
+      "id": "med_028",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "78-year-old male with heart failure with reduced ejection fraction (HFrEF). EF 30% on echo. NYHA class III symptoms. On lisinopril, carvedilol, furosemide, and spironolactone. Added sacubitril/valsartan to replace lisinopril. CRT-D evaluation discussed.",
+        "symptoms": ["dyspnea on exertion", "orthopnea", "peripheral edema", "fatigue"],
+        "treatments": ["sacubitril/valsartan initiation", "diuretic adjustment", "CRT-D evaluation"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 78,
+        "patient_sex": "M",
+        "provider_specialty": "Cardiology",
+        "visit_type": "outpatient",
+        "comorbidities": ["HFrEF", "atrial fibrillation", "CKD stage 3"],
+        "lab_results": "Echo: EF 30%, BNP: 1250, Cr: 1.6, K: 4.8, Na: 136",
+        "medications": ["sacubitril/valsartan 24/26mg BID", "carvedilol 25mg BID", "furosemide 40mg BID", "spironolactone 25mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["I50.22"],
+        "procedure_codes": ["99215"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment", "prior_auth_needed"]
+      }
+    },
+    {
+      "id": "med_029",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "44-year-old female with multiple sclerosis relapse. New left-sided weakness and visual blurring over 3 days. MRI shows new enhancing lesion in right periventricular white matter. Started on IV methylprednisolone 1g x 5 days. Baseline EDSS 2.5, now 4.0.",
+        "symptoms": ["left arm weakness", "visual blurring", "gait unsteadiness", "fatigue"],
+        "treatments": ["IV methylprednisolone pulse", "physical therapy"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 44,
+        "patient_sex": "F",
+        "provider_specialty": "Neurology",
+        "visit_type": "inpatient",
+        "comorbidities": ["multiple sclerosis"],
+        "lab_results": "MRI Brain: New enhancing lesion right periventricular WM, EDSS: 4.0",
+        "medications": ["methylprednisolone 1g IV daily", "dimethyl fumarate 240mg BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["G35"],
+        "procedure_codes": ["99223"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment"]
+      }
+    },
+    {
+      "id": "med_030",
+      "difficulty": "medium",
+      "input": {
+        "clinical_note": "56-year-old male with suspected peripheral arterial disease. Claudication in right calf after walking 1 block. ABI right 0.65, left 0.95. Risk factor management initiated: statin, antiplatelet, smoking cessation. Vascular surgery referral for consideration of angiography.",
+        "symptoms": ["right calf claudication", "cold right foot", "decreased right pedal pulse"],
+        "treatments": ["cilostazol", "aspirin", "atorvastatin", "smoking cessation"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 56,
+        "patient_sex": "M",
+        "provider_specialty": "Vascular Surgery",
+        "visit_type": "outpatient",
+        "comorbidities": ["hypertension", "hyperlipidemia", "active smoker", "type 2 diabetes"],
+        "lab_results": "ABI: Right 0.65, Left 0.95, LDL: 145, A1C: 7.4%",
+        "medications": ["aspirin 81mg", "atorvastatin 80mg", "cilostazol 100mg BID", "metformin 1000mg BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["I73.9"],
+        "procedure_codes": ["93922"],
+        "decision": "approve",
+        "risk_flags": ["multiple_diagnoses"]
+      }
+    }
+  ]
+}

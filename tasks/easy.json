@@ -1,0 +1,756 @@
+{
+  "difficulty": "easy",
+  "description": "Straightforward clinical cases with direct ICD-10/CPT mapping, single diagnoses, and clear compliance decisions.",
+  "cases": [
+    {
+      "id": "easy_001",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with acute pharyngitis. Throat is erythematous with no exudate. Rapid strep test negative. Diagnosed with viral pharyngitis. Advised rest, fluids, and OTC analgesics.",
+        "symptoms": ["sore throat", "mild fever", "difficulty swallowing"],
+        "treatments": ["rest", "fluids", "acetaminophen"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 28,
+        "patient_sex": "F",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "Rapid strep test: Negative",
+        "medications": ["acetaminophen 500mg PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["J02.9"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_002",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "42-year-old male presents for annual wellness exam. No complaints. Vitals normal. BMI 24.3. Routine labs ordered. Patient counseled on diet and exercise.",
+        "symptoms": [],
+        "treatments": ["routine labs", "health counseling"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 42,
+        "patient_sex": "M",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["Z00.00"],
+        "procedure_codes": ["99395"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_003",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with uncomplicated urinary tract infection. Dysuria and frequency for 2 days. UA positive for nitrites and leukocyte esterase. Prescribed trimethoprim-sulfamethoxazole.",
+        "symptoms": ["dysuria", "urinary frequency", "suprapubic discomfort"],
+        "treatments": ["trimethoprim-sulfamethoxazole"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 65,
+        "patient_sex": "F",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "UA: Nitrites positive, Leukocyte esterase positive, WBC >10/hpf",
+        "medications": ["trimethoprim-sulfamethoxazole 160/800mg BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["N39.0"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_004",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Child brought in by mother for ear pain x2 days. Otoscopic exam reveals bulging, erythematous right tympanic membrane. Diagnosed with acute otitis media. Prescribed amoxicillin.",
+        "symptoms": ["right ear pain", "fussiness", "mild fever"],
+        "treatments": ["amoxicillin"],
+        "insurance_type": "Medicaid",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 4,
+        "patient_sex": "M",
+        "provider_specialty": "Pediatrics",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["amoxicillin 250mg/5mL TID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["H66.91"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_005",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient with known type 2 diabetes presents for routine follow-up. A1C obtained is 7.1%. Current medications reviewed. No complications. Continue metformin. Follow up in 3 months.",
+        "symptoms": [],
+        "treatments": ["metformin continuation", "A1C monitoring"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 58,
+        "patient_sex": "M",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": ["type 2 diabetes"],
+        "lab_results": "HbA1c: 7.1%",
+        "medications": ["metformin 1000mg BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["E11.65"],
+        "procedure_codes": ["99214"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_006",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with acute bronchitis. Cough productive of clear sputum for 5 days. Lungs clear to auscultation. No fever. Chest x-ray not indicated. Supportive care recommended.",
+        "symptoms": ["productive cough", "mild chest discomfort", "fatigue"],
+        "treatments": ["rest", "fluids", "cough suppressant"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 35,
+        "patient_sex": "F",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["dextromethorphan PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["J20.9"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_007",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents for removal of a benign skin lesion on the back. Lesion is 0.8cm, non-suspicious. Shave removal performed without complications. Specimen sent to pathology.",
+        "symptoms": ["skin lesion on back"],
+        "treatments": ["shave removal of lesion"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 45,
+        "patient_sex": "M",
+        "provider_specialty": "Dermatology",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["D23.5"],
+        "procedure_codes": ["11305"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_008",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with allergic rhinitis. Sneezing, nasal congestion, and watery eyes for 3 weeks. Symptoms seasonal. No fever. Started on cetirizine and fluticasone nasal spray.",
+        "symptoms": ["sneezing", "nasal congestion", "watery eyes", "itchy nose"],
+        "treatments": ["cetirizine", "fluticasone nasal spray"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 32,
+        "patient_sex": "F",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["cetirizine 10mg daily", "fluticasone nasal spray"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["J30.1"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_009",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient twisted ankle playing basketball. X-ray negative for fracture. Mild swelling and tenderness over lateral malleolus. Diagnosed with ankle sprain. RICE protocol and ACE wrap applied.",
+        "symptoms": ["ankle pain", "swelling", "difficulty bearing weight"],
+        "treatments": ["RICE protocol", "ACE wrap", "ibuprofen"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 22,
+        "patient_sex": "M",
+        "provider_specialty": "Emergency Medicine",
+        "visit_type": "emergency",
+        "comorbidities": [],
+        "lab_results": "X-ray right ankle: No fracture identified",
+        "medications": ["ibuprofen 400mg TID PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["S93.401"],
+        "procedure_codes": ["99283"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_010",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with tension headache. Reports bilateral, non-pulsating headache for 2 days. No visual changes, no nausea or vomiting. Neurological exam normal. Prescribed ibuprofen.",
+        "symptoms": ["bilateral headache", "neck stiffness", "fatigue"],
+        "treatments": ["ibuprofen"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 30,
+        "patient_sex": "F",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["ibuprofen 400mg PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["G44.209"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_011",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Infant presents for 6-month well-child visit. Growth and development on track. Immunizations administered per CDC schedule. Anticipatory guidance provided to parents.",
+        "symptoms": [],
+        "treatments": ["immunizations", "developmental screening"],
+        "insurance_type": "Medicaid",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 0,
+        "patient_sex": "F",
+        "provider_specialty": "Pediatrics",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["Z00.129"],
+        "procedure_codes": ["99391"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_012",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with localized contact dermatitis on both hands. Reports using new cleaning product. Erythematous, pruritic rash on dorsal hands bilaterally. Prescribed topical hydrocortisone.",
+        "symptoms": ["itchy rash on hands", "erythema", "mild swelling"],
+        "treatments": ["topical hydrocortisone", "avoidance of irritant"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 38,
+        "patient_sex": "F",
+        "provider_specialty": "Dermatology",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["hydrocortisone 1% cream BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["L25.9"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_013",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with conjunctivitis. Red, watery left eye for 3 days. No vision changes. No discharge. Likely viral etiology. Advised warm compresses and artificial tears.",
+        "symptoms": ["red eye", "watery discharge", "mild irritation"],
+        "treatments": ["warm compresses", "artificial tears"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 25,
+        "patient_sex": "M",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["artificial tears PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["H10.9"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_014",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with GERD symptoms. Heartburn and regurgitation for 4 weeks. No alarm symptoms. No dysphagia or weight loss. Started on omeprazole 20mg daily.",
+        "symptoms": ["heartburn", "acid regurgitation", "epigastric discomfort"],
+        "treatments": ["omeprazole"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 55,
+        "patient_sex": "M",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["omeprazole 20mg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["K21.0"],
+        "procedure_codes": ["99214"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_015",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with insomnia. Difficulty falling asleep for 6 weeks. No daytime sleepiness while driving. Good sleep hygiene discussed. No medications prescribed; CBT-I referral placed.",
+        "symptoms": ["difficulty falling asleep", "fatigue", "irritability"],
+        "treatments": ["sleep hygiene counseling", "CBT-I referral"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 40,
+        "patient_sex": "F",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["G47.00"],
+        "procedure_codes": ["99214"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_016",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient with known hypertension presents for medication refill. Blood pressure well controlled at 128/78. No symptoms. Continue lisinopril 10mg daily. Follow up in 6 months.",
+        "symptoms": [],
+        "treatments": ["lisinopril continuation"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 62,
+        "patient_sex": "M",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": ["essential hypertension"],
+        "lab_results": "BP: 128/78 mmHg",
+        "medications": ["lisinopril 10mg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["I10"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_017",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with acute sinusitis. Facial pain, nasal congestion, and purulent discharge for 10 days. No improvement with OTC decongestants. Started amoxicillin-clavulanate.",
+        "symptoms": ["facial pain", "nasal congestion", "purulent nasal discharge", "low-grade fever"],
+        "treatments": ["amoxicillin-clavulanate"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 34,
+        "patient_sex": "M",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["amoxicillin-clavulanate 875/125mg BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["J01.90"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_018",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with impetigo on the face. Honey-colored crusted lesions around the nose and mouth. Diagnosed with non-bullous impetigo. Prescribed mupirocin ointment.",
+        "symptoms": ["crusted lesions around nose", "mild itching"],
+        "treatments": ["mupirocin ointment"],
+        "insurance_type": "Medicaid",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 6,
+        "patient_sex": "M",
+        "provider_specialty": "Pediatrics",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["mupirocin 2% ointment TID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["L01.00"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_019",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents for flu vaccination. No acute complaints. Past medical history unremarkable. Influenza vaccine (IIV4) administered intramuscularly in left deltoid.",
+        "symptoms": [],
+        "treatments": ["influenza vaccination"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 70,
+        "patient_sex": "F",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["Z23"],
+        "procedure_codes": ["90688"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_020",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with lower back pain after lifting heavy box at work. No radiation to legs. No weakness or numbness. Lumbar strain diagnosed. NSAIDs and physical therapy recommended.",
+        "symptoms": ["lower back pain", "stiffness", "limited range of motion"],
+        "treatments": ["ibuprofen", "physical therapy referral"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 36,
+        "patient_sex": "M",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["ibuprofen 600mg TID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["M54.5"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_021",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents for iron deficiency anemia follow-up. Recent labs show hemoglobin 10.8 g/dL, ferritin 12 ng/mL. Iron supplementation continued. Repeat labs in 3 months.",
+        "symptoms": ["fatigue", "pallor"],
+        "treatments": ["iron supplementation"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 29,
+        "patient_sex": "F",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "Hgb: 10.8 g/dL, Ferritin: 12 ng/mL, MCV: 72 fL",
+        "medications": ["ferrous sulfate 325mg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["D50.9"],
+        "procedure_codes": ["99214"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_022",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with acne vulgaris. Moderate papulopustular acne on face. No scarring. Started on benzoyl peroxide and topical retinoid. Follow up in 8 weeks.",
+        "symptoms": ["facial acne", "papules", "pustules"],
+        "treatments": ["benzoyl peroxide", "topical tretinoin"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 16,
+        "patient_sex": "F",
+        "provider_specialty": "Dermatology",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["benzoyl peroxide 5% gel", "tretinoin 0.025% cream"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["L70.0"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_023",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with gastroenteritis. Nausea, vomiting, and watery diarrhea for 2 days. No blood in stool. Mild dehydration. Oral rehydration recommended. Symptoms improving.",
+        "symptoms": ["nausea", "vomiting", "watery diarrhea", "abdominal cramps"],
+        "treatments": ["oral rehydration", "bland diet"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 27,
+        "patient_sex": "M",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["ondansetron 4mg PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["K52.9"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_024",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with wrist pain after fall on outstretched hand. X-ray shows distal radius fracture, non-displaced. Short arm cast applied. Orthopedic follow-up arranged.",
+        "symptoms": ["wrist pain", "swelling", "limited wrist motion"],
+        "treatments": ["short arm cast", "pain management"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 11,
+        "patient_sex": "M",
+        "provider_specialty": "Emergency Medicine",
+        "visit_type": "emergency",
+        "comorbidities": [],
+        "lab_results": "X-ray left wrist: Non-displaced distal radius fracture",
+        "medications": ["ibuprofen 200mg TID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["S52.501"],
+        "procedure_codes": ["99283"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_025",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents for hypothyroidism follow-up. TSH 3.2 mIU/L on levothyroxine 75mcg. Symptoms well controlled. No dose adjustment needed. Continue current therapy.",
+        "symptoms": [],
+        "treatments": ["levothyroxine continuation"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 56,
+        "patient_sex": "F",
+        "provider_specialty": "Endocrinology",
+        "visit_type": "outpatient",
+        "comorbidities": ["hypothyroidism"],
+        "lab_results": "TSH: 3.2 mIU/L (normal range 0.4-4.0)",
+        "medications": ["levothyroxine 75mcg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["E03.9"],
+        "procedure_codes": ["99214"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_026",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with mild depression. PHQ-9 score of 8. No suicidal ideation. Started on sertraline 50mg. Counseling referral provided. Follow up in 4 weeks.",
+        "symptoms": ["depressed mood", "decreased interest", "fatigue", "difficulty concentrating"],
+        "treatments": ["sertraline", "counseling referral"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 33,
+        "patient_sex": "F",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "PHQ-9: 8 (mild depression)",
+        "medications": ["sertraline 50mg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["F32.0"],
+        "procedure_codes": ["99214"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_027",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with tinea pedis. Itchy, scaly rash between toes bilaterally. Classic interdigital presentation. Prescribed topical clotrimazole cream.",
+        "symptoms": ["itchy feet", "scaly rash between toes", "mild burning"],
+        "treatments": ["clotrimazole cream"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 44,
+        "patient_sex": "M",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["clotrimazole 1% cream BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["B35.3"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_028",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents requesting a tetanus booster. Last Tdap was over 10 years ago. No acute injuries. Td vaccine administered in right deltoid without complications.",
+        "symptoms": [],
+        "treatments": ["Td vaccination"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 50,
+        "patient_sex": "M",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["Z23"],
+        "procedure_codes": ["90714"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_029",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with constipation. No bowel movement for 4 days. Abdomen soft, non-distended. No alarming features. Advised increased fiber and fluids. Prescribed polyethylene glycol.",
+        "symptoms": ["constipation", "mild abdominal discomfort", "bloating"],
+        "treatments": ["dietary fiber increase", "polyethylene glycol"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 48,
+        "patient_sex": "F",
+        "provider_specialty": "Family Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["polyethylene glycol 17g daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["K59.00"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    },
+    {
+      "id": "easy_030",
+      "difficulty": "easy",
+      "input": {
+        "clinical_note": "Patient presents with plantar fasciitis. Heel pain worse with first steps in morning. Tenderness at medial calcaneal tubercle. Recommended stretching exercises, ice, and supportive footwear.",
+        "symptoms": ["heel pain", "pain with first steps", "tenderness at heel"],
+        "treatments": ["stretching exercises", "ice therapy", "supportive footwear"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 42,
+        "patient_sex": "M",
+        "provider_specialty": "Orthopedics",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["naproxen 500mg BID PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["M72.2"],
+        "procedure_codes": ["99213"],
+        "decision": "approve",
+        "risk_flags": []
+      }
+    }
+  ]
+}

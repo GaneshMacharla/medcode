@@ -1,0 +1,756 @@
+{
+  "difficulty": "hard",
+  "description": "Complex cases with compliance dilemmas, upcoding/fraud scenarios, insurance denial situations, ambiguous diagnoses, and multi-system conditions requiring nuanced coding decisions.",
+  "cases": [
+    {
+      "id": "hard_001",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "82-year-old Medicare patient presents with knee pain. Provider documents 'severe arthritis' but X-ray shows only mild degenerative changes. Provider orders MRI, bilateral knee injections, and schedules total knee replacement consultation. Documentation does not support the level of intervention being pursued. Prior conservative measures not documented.",
+        "symptoms": ["mild knee pain", "slight stiffness"],
+        "treatments": ["bilateral knee injections", "MRI ordered", "TKR consultation"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 82,
+        "patient_sex": "F",
+        "provider_specialty": "Orthopedics",
+        "visit_type": "outpatient",
+        "comorbidities": ["hypertension", "type 2 diabetes", "CKD stage 3"],
+        "lab_results": "X-ray bilateral knees: Mild degenerative changes, no significant joint space narrowing",
+        "medications": ["lisinopril 20mg", "metformin 500mg", "acetaminophen PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["M17.9"],
+        "procedure_codes": ["99213"],
+        "decision": "reject",
+        "risk_flags": ["upcoding_risk", "documentation_mismatch", "medically_unnecessary"]
+      }
+    },
+    {
+      "id": "hard_002",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "45-year-old patient with vague abdominal complaints. Provider orders extensive workup: CT abdomen/pelvis with contrast, MRI abdomen, upper and lower endoscopy, capsule endoscopy, and tumor markers panel. Patient has no alarm symptoms, no weight loss, no family history of GI cancer. Physical exam unremarkable. Labs are all normal.",
+        "symptoms": ["mild abdominal discomfort", "occasional bloating"],
+        "treatments": ["CT abdomen/pelvis", "MRI abdomen", "EGD", "colonoscopy", "capsule endoscopy", "tumor markers"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 45,
+        "patient_sex": "M",
+        "provider_specialty": "Gastroenterology",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "CBC: normal, CMP: normal, Lipase: normal, Celiac panel: negative",
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["R10.9"],
+        "procedure_codes": ["99214"],
+        "decision": "reject",
+        "risk_flags": ["excessive_testing", "medically_unnecessary", "documentation_mismatch"]
+      }
+    },
+    {
+      "id": "hard_003",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "70-year-old male with metastatic non-small cell lung cancer, stage IV. ECOG 3. Multiple brain metastases, liver metastases, bone metastases. Failed two lines of chemotherapy. Oncologist recommends third-line pembrolizumab despite PD-L1 <1% and poor functional status. Family insists on aggressive treatment. Prognosis estimated at 2-4 weeks.",
+        "symptoms": ["severe dyspnea", "cachexia", "confusion", "bone pain", "anorexia"],
+        "treatments": ["pembrolizumab proposed", "palliative care discussed"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 70,
+        "patient_sex": "M",
+        "provider_specialty": "Oncology",
+        "visit_type": "inpatient",
+        "comorbidities": ["NSCLC stage IV", "brain metastases", "liver metastases", "bone metastases"],
+        "lab_results": "PD-L1: <1%, ECOG: 3, Albumin: 2.1, LDH: 580, CT: progressive disease on 2 prior regimens",
+        "medications": ["morphine extended-release", "dexamethasone 4mg BID", "ondansetron PRN"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["C34.90", "C79.31", "C78.7", "C79.51"],
+        "procedure_codes": ["99223"],
+        "decision": "reject",
+        "risk_flags": ["medically_unnecessary", "poor_prognosis", "off_label_use", "high_cost_treatment"]
+      }
+    },
+    {
+      "id": "hard_004",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "55-year-old female with fibromyalgia and chronic pain syndrome. Currently on oxycodone 30mg QID, alprazolam 2mg TID, and carisoprodol 350mg TID — the 'holy trinity' of medications. Provider documents pain as 10/10 at every visit. No functional assessment documented. No multimodal pain management attempted. Requesting increased opioid dose. MME currently at 180.",
+        "symptoms": ["diffuse body pain", "fatigue", "sleep disruption", "depression"],
+        "treatments": ["oxycodone increase requested", "current polypharmacy"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "medium",
+        "patient_age": 55,
+        "patient_sex": "F",
+        "provider_specialty": "Pain Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": ["fibromyalgia", "chronic pain syndrome", "depression", "anxiety"],
+        "lab_results": "Urine drug screen: consistent with prescribed medications, no illicit substances",
+        "medications": ["oxycodone 30mg QID", "alprazolam 2mg TID", "carisoprodol 350mg TID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["M79.7"],
+        "procedure_codes": ["99214"],
+        "decision": "reject",
+        "risk_flags": ["dangerous_polypharmacy", "high_mme_opioid", "missing_documentation", "controlled_substance"]
+      }
+    },
+    {
+      "id": "hard_005",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Patient presents with chest pain. Provider bills 99285 (highest ED code) for what appears to be a straightforward evaluation. Documentation shows: 'Patient presents with chest pain. ECG normal. Troponin negative. Chest X-ray normal. Patient discharged with follow-up.' Total ED time: 45 minutes. No critical interventions performed.",
+        "symptoms": ["chest pain", "mild anxiety"],
+        "treatments": ["ECG", "troponin", "chest X-ray"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 52,
+        "patient_sex": "M",
+        "provider_specialty": "Emergency Medicine",
+        "visit_type": "emergency",
+        "comorbidities": ["anxiety disorder"],
+        "lab_results": "ECG: Normal sinus rhythm, Troponin: <0.04 (negative), CXR: No acute process",
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["R07.9"],
+        "procedure_codes": ["99283"],
+        "decision": "review",
+        "risk_flags": ["upcoding_risk", "documentation_mismatch"]
+      }
+    },
+    {
+      "id": "hard_006",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "38-year-old healthy female requests full body MRI screening. No symptoms, no risk factors, no family history of cancer. Provider orders whole body MRI, PET-CT, comprehensive tumor marker panel (CA-125, CEA, AFP, CA 19-9, PSA), and genetic testing panel. Bills as diagnostic workup for 'suspected malignancy.'",
+        "symptoms": [],
+        "treatments": ["whole body MRI", "PET-CT", "tumor markers", "genetic testing"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 38,
+        "patient_sex": "F",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "All routine labs normal",
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["Z00.00"],
+        "procedure_codes": ["99214"],
+        "decision": "reject",
+        "risk_flags": ["medically_unnecessary", "upcoding_risk", "false_diagnosis_coding", "excessive_testing"]
+      }
+    },
+    {
+      "id": "hard_007",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Patient with chronic back pain. Provider performs 'trigger point injections' at 12 sites across the back in one session, billing each injection separately. Also bills for fluoroscopic guidance for each injection despite trigger point injections not requiring imaging guidance. Additionally bills an E&M code at the highest level.",
+        "symptoms": ["chronic back pain", "muscle tension"],
+        "treatments": ["12 trigger point injections", "fluoroscopic guidance x12"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 60,
+        "patient_sex": "M",
+        "provider_specialty": "Pain Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": ["chronic low back pain", "degenerative disc disease"],
+        "lab_results": null,
+        "medications": ["gabapentin 600mg TID", "cyclobenzaprine 10mg TID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["M54.5"],
+        "procedure_codes": ["20552"],
+        "decision": "reject",
+        "risk_flags": ["unbundling_violation", "upcoding_risk", "medically_unnecessary", "billing_fraud"]
+      }
+    },
+    {
+      "id": "hard_008",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "48-year-old female with lupus nephritis class IV on mycophenolate and prednisone. Presents with increasing proteinuria (3.5g/24hr), rising creatinine (2.1 from baseline 1.2), and new anti-dsDNA titer rise. Nephrologist recommends adding rituximab. Insurance denies rituximab as 'experimental' for lupus nephritis despite growing evidence base.",
+        "symptoms": ["fatigue", "facial edema", "foamy urine", "joint pain", "malar rash"],
+        "treatments": ["rituximab requested", "mycophenolate continuation", "prednisone increase"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 48,
+        "patient_sex": "F",
+        "provider_specialty": "Nephrology",
+        "visit_type": "outpatient",
+        "comorbidities": ["SLE", "lupus nephritis class IV", "hypertension"],
+        "lab_results": "Cr: 2.1, 24hr protein: 3.5g, C3: 45 (low), C4: 8 (low), anti-dsDNA: 1:640, eGFR: 32",
+        "medications": ["mycophenolate 1500mg BID", "prednisone 20mg daily", "hydroxychloroquine 200mg BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["M32.14", "N04.9"],
+        "procedure_codes": ["99215"],
+        "decision": "review",
+        "risk_flags": ["off_label_use", "high_cost_treatment", "prior_auth_needed"]
+      }
+    },
+    {
+      "id": "hard_009",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Uninsured 35-year-old male presents with diabetic ketoacidosis. Blood glucose 580 mg/dL, pH 7.18, bicarbonate 8. Admitted to ICU. Insulin drip, aggressive fluid resuscitation, electrolyte replacement. Patient has no primary care provider and has been rationing insulin due to cost. A1C 14.2%. ICU stay 3 days, total hospitalization 5 days.",
+        "symptoms": ["nausea", "vomiting", "abdominal pain", "altered mental status", "Kussmaul breathing"],
+        "treatments": ["insulin drip", "IV fluids", "electrolyte replacement", "ICU monitoring"],
+        "insurance_type": "Uninsured",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 35,
+        "patient_sex": "M",
+        "provider_specialty": "Critical Care",
+        "visit_type": "inpatient",
+        "comorbidities": ["type 1 diabetes", "medication non-adherence"],
+        "lab_results": "Glucose: 580, pH: 7.18, HCO3: 8, Anion gap: 28, K: 5.8, A1C: 14.2%, BUN: 32",
+        "medications": ["insulin drip", "normal saline 1L/hr", "potassium replacement"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["E10.10", "E10.65"],
+        "procedure_codes": ["99223"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment", "social_determinants"]
+      }
+    },
+    {
+      "id": "hard_010",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Provider bills for a 'comprehensive metabolic panel' on every patient visit regardless of indication. Today's patient is a 25-year-old presenting for acne follow-up on topical retinoid only. Provider orders CMP, CBC, lipid panel, TSH, vitamin D, B12, folate, iron studies, and ANA. No clinical indication for any of these labs based on the presenting complaint.",
+        "symptoms": ["facial acne"],
+        "treatments": ["topical tretinoin continuation", "extensive lab panel ordered"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 25,
+        "patient_sex": "F",
+        "provider_specialty": "Dermatology",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": ["tretinoin 0.025% cream nightly"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["L70.0"],
+        "procedure_codes": ["99213"],
+        "decision": "reject",
+        "risk_flags": ["excessive_testing", "medically_unnecessary", "billing_fraud"]
+      }
+    },
+    {
+      "id": "hard_011",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "62-year-old diabetic male with chronic non-healing foot ulcer, Wagner grade 2. Wound measures 3x4cm on plantar surface of right foot. Debrided in office. ABI 0.7 suggesting mild PAD. HbA1c 9.8%. Provider recommends hyperbaric oxygen therapy (40 sessions) and applies advanced wound care product (human skin substitute). Wound has only been present for 3 weeks with no prior standard wound care attempted.",
+        "symptoms": ["foot ulcer", "mild pain", "drainage from wound"],
+        "treatments": ["wound debridement", "HBO therapy proposed", "advanced wound care product"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 62,
+        "patient_sex": "M",
+        "provider_specialty": "Wound Care",
+        "visit_type": "outpatient",
+        "comorbidities": ["type 2 diabetes", "peripheral arterial disease", "neuropathy"],
+        "lab_results": "ABI: 0.7, A1C: 9.8%, Wound culture: Staph aureus, WBC: 11,500",
+        "medications": ["insulin glargine 40u", "metformin 1000mg BID", "cephalexin 500mg QID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["E11.621", "L97.519"],
+        "procedure_codes": ["11042"],
+        "decision": "review",
+        "risk_flags": ["premature_advanced_therapy", "missing_documentation", "high_cost_treatment"]
+      }
+    },
+    {
+      "id": "hard_012",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Provider sees 15-year-old for sore throat and documents with 99215 (highest outpatient E&M code, typically 40+ minutes for complex patients). Visit duration was 10 minutes per schedule. Rapid strep positive. Prescribed amoxicillin. Provider also bills for separate counseling code and care coordination code for this straightforward visit.",
+        "symptoms": ["sore throat", "fever", "tonsillar exudate"],
+        "treatments": ["amoxicillin", "rapid strep test"],
+        "insurance_type": "Medicaid",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 15,
+        "patient_sex": "M",
+        "provider_specialty": "Pediatrics",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "Rapid strep: Positive",
+        "medications": ["amoxicillin 500mg BID x10 days"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["J02.0"],
+        "procedure_codes": ["99213"],
+        "decision": "reject",
+        "risk_flags": ["upcoding_risk", "documentation_mismatch", "unbundling_violation"]
+      }
+    },
+    {
+      "id": "hard_013",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "58-year-old female with suspected somatization disorder. Reports 15+ symptoms across multiple organ systems over past 2 years, including chest pain, abdominal pain, headaches, numbness, blindness episodes, and seizure-like episodes. Extensive prior workup entirely negative including cardiac cath, brain MRI, EEG, endoscopy, and colonoscopy. Provider now orders repeat of all prior tests.",
+        "symptoms": ["chest pain", "abdominal pain", "headaches", "numbness", "blindness episodes", "pseudo-seizures"],
+        "treatments": ["repeat cardiac catheterization", "repeat MRI brain", "repeat EEG", "repeat endoscopy"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 58,
+        "patient_sex": "F",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": ["anxiety", "depression"],
+        "lab_results": "All prior extensive workup: negative. No new clinical findings to justify repeat testing.",
+        "medications": ["sertraline 100mg", "gabapentin 300mg TID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["F45.0"],
+        "procedure_codes": ["99215"],
+        "decision": "reject",
+        "risk_flags": ["excessive_testing", "medically_unnecessary", "missing_documentation"]
+      }
+    },
+    {
+      "id": "hard_014",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Septic patient, 74-year-old male with E. coli bacteremia from urinary source. Blood cultures positive. Lactate 4.2. BP 82/50, HR 112. Initial fluid resuscitation 30mL/kg, started on vasopressors. Piperacillin-tazobactam empirically, narrowed to ceftriaxone per sensitivities. Central line placed. ICU admission. APACHE II score 22.",
+        "symptoms": ["fever", "hypotension", "tachycardia", "altered mental status", "rigors"],
+        "treatments": ["IV antibiotics", "vasopressors", "fluid resuscitation", "central line", "ICU monitoring"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 74,
+        "patient_sex": "M",
+        "provider_specialty": "Critical Care",
+        "visit_type": "inpatient",
+        "comorbidities": ["BPH", "type 2 diabetes", "CKD stage 3", "hypertension"],
+        "lab_results": "Blood cx: E. coli, Lactate: 4.2, WBC: 22,000, Cr: 2.8 (baseline 1.5), Procalcitonin: 12.5",
+        "medications": ["ceftriaxone 2g IV daily", "norepinephrine drip", "insulin drip", "normal saline"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["A41.51", "R65.21", "N39.0"],
+        "procedure_codes": ["99223", "36556"],
+        "decision": "approve",
+        "risk_flags": ["multiple_diagnoses", "high_cost_treatment"]
+      }
+    },
+    {
+      "id": "hard_015",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "32-year-old female with chronic Lyme disease diagnosis by naturopath. No positive standard two-tier testing. Provider administers long-term IV ceftriaxone through PICC line for 3 months despite IDSA guidelines recommending against prolonged antibiotic therapy for 'chronic Lyme.' Patient also receiving IV hydrogen peroxide and high-dose IV vitamin C as 'Lyme protocols.'",
+        "symptoms": ["fatigue", "joint pain", "brain fog", "insomnia"],
+        "treatments": ["IV ceftriaxone 3 months", "IV hydrogen peroxide", "IV vitamin C", "PICC line"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 32,
+        "patient_sex": "F",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "Lyme ELISA: negative, Western blot: not performed, CBC: normal, CMP: normal",
+        "medications": ["ceftriaxone 2g IV daily", "vitamin C IV", "hydrogen peroxide IV"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["R53.83"],
+        "procedure_codes": ["99214"],
+        "decision": "reject",
+        "risk_flags": ["unproven_treatment", "medically_unnecessary", "patient_safety_risk", "false_diagnosis_coding"]
+      }
+    },
+    {
+      "id": "hard_016",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Dual-eligible patient (Medicare + Medicaid), 80-year-old with advanced dementia (FAST stage 7c), bedbound, non-verbal. Develops aspiration pneumonia. Family demands full code, ICU admission, mechanical ventilation, and feeding tube placement. Palliative care consult declined by family. Question of whether aggressive interventions are medically appropriate given baseline functional status.",
+        "symptoms": ["fever", "tachypnea", "oxygen desaturation", "productive cough"],
+        "treatments": ["ICU admission", "mechanical ventilation proposed", "PEG tube proposed", "antibiotics"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 80,
+        "patient_sex": "F",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "inpatient",
+        "comorbidities": ["advanced dementia", "recurrent aspiration pneumonia", "malnutrition", "pressure ulcers"],
+        "lab_results": "CXR: bilateral aspiration pneumonia, WBC: 18,000, Albumin: 1.8, prealbumin: 6",
+        "medications": ["ceftriaxone 1g IV", "azithromycin 500mg IV"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["J69.0", "F03.90"],
+        "procedure_codes": ["99223"],
+        "decision": "review",
+        "risk_flags": ["medical_futility", "ethical_concern", "high_cost_treatment"]
+      }
+    },
+    {
+      "id": "hard_017",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Surgeon performs laparoscopic cholecystectomy and documents it as an open cholecystectomy (which reimburses at a higher rate). Operative note describes 4 trocar ports, pneumoperitoneum, and laparoscopic visualization — all hallmarks of laparoscopic approach. No documentation of conversion to open. 45-year-old with symptomatic cholelithiasis.",
+        "symptoms": ["RUQ pain", "nausea after fatty meals", "positive Murphy's sign"],
+        "treatments": ["cholecystectomy"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 45,
+        "patient_sex": "F",
+        "provider_specialty": "General Surgery",
+        "visit_type": "inpatient",
+        "comorbidities": ["cholelithiasis"],
+        "lab_results": "US: multiple gallstones, GB wall thickening, no CBD dilation, LFTs: mildly elevated",
+        "medications": ["ketorolac 30mg IV", "ondansetron 4mg IV"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["K80.20"],
+        "procedure_codes": ["47562"],
+        "decision": "reject",
+        "risk_flags": ["billing_fraud", "upcoding_risk", "documentation_mismatch"]
+      }
+    },
+    {
+      "id": "hard_018",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "28-year-old male with treatment-resistant depression, failed 4 SSRI/SNRI trials, failed augmentation with lithium and aripiprazole. PHQ-9 persistently 22+. Provider recommends esketamine (Spravato) nasal spray. Insurance requires step therapy documentation. All prior treatment failures documented. GAF score 35.",
+        "symptoms": ["severe depression", "anhedonia", "suicidal ideation without plan", "insomnia", "weight loss"],
+        "treatments": ["esketamine nasal spray proposed", "current venlafaxine continuation"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 28,
+        "patient_sex": "M",
+        "provider_specialty": "Psychiatry",
+        "visit_type": "outpatient",
+        "comorbidities": ["treatment-resistant depression"],
+        "lab_results": "PHQ-9: 22, GAF: 35, TSH: normal, B12: normal, toxicology: negative",
+        "medications": ["venlafaxine 225mg daily", "trazodone 100mg QHS"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["F33.2"],
+        "procedure_codes": ["99215"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment", "prior_auth_needed", "controlled_substance"]
+      }
+    },
+    {
+      "id": "hard_019",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "72-year-old female with mild cognitive impairment prescribed lecanemab (Leqembi) — the new anti-amyloid antibody. Amyloid PET positive. However, patient is on anticoagulation for atrial fibrillation (apixaban), which significantly increases ARIA risk. MRI shows 2 prior microhemorrhages. The risk-benefit ratio is questionable given the bleeding risk and the modest clinical benefit.",
+        "symptoms": ["memory decline", "word-finding difficulty", "getting lost in familiar places"],
+        "treatments": ["lecanemab infusion proposed"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 72,
+        "patient_sex": "F",
+        "provider_specialty": "Neurology",
+        "visit_type": "outpatient",
+        "comorbidities": ["mild cognitive impairment", "atrial fibrillation", "hypertension"],
+        "lab_results": "Amyloid PET: positive, MRI: 2 microhemorrhages, MMSE: 22/30, MoCA: 18/30",
+        "medications": ["apixaban 5mg BID", "donepezil 10mg", "metoprolol 50mg BID"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["G31.84"],
+        "procedure_codes": ["99215"],
+        "decision": "reject",
+        "risk_flags": ["patient_safety_risk", "contraindication", "high_cost_treatment"]
+      }
+    },
+    {
+      "id": "hard_020",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Clinic performs 'annual comprehensive metabolic testing' on all patients and bills each component separately rather than as a panel (unbundling). Today's patient: 40-year-old healthy male for routine physical. Billed: glucose, BUN, creatinine, sodium, potassium, chloride, CO2, calcium, total protein, albumin, bilirubin, alkaline phosphatase, AST, ALT individually instead of as CMP (80053).",
+        "symptoms": [],
+        "treatments": ["routine physical", "individual metabolic labs"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 40,
+        "patient_sex": "M",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "All individual metabolic components: normal",
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["Z00.00"],
+        "procedure_codes": ["99395"],
+        "decision": "reject",
+        "risk_flags": ["unbundling_violation", "billing_fraud"]
+      }
+    },
+    {
+      "id": "hard_021",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "16-year-old female athlete with ACL tear confirmed on MRI. Orthopedics recommends ACL reconstruction with hamstring autograft. However, patient has open growth plates (Tanner stage 3). Standard ACL reconstruction may damage the physis. Modified technique (physeal-sparing) is appropriate but harder to code. Parents want surgery immediately despite growth plate concerns.",
+        "symptoms": ["knee instability", "swelling", "giving way episodes", "inability to return to sport"],
+        "treatments": ["physeal-sparing ACL reconstruction recommended"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 16,
+        "patient_sex": "F",
+        "provider_specialty": "Orthopedics",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": "MRI right knee: Complete ACL tear, no meniscal tear, bone bruise lateral femoral condyle",
+        "medications": ["naproxen 500mg BID", "knee brace"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["S83.511"],
+        "procedure_codes": ["29888"],
+        "decision": "review",
+        "risk_flags": ["pediatric_consideration", "growth_plate_risk", "prior_auth_needed"]
+      }
+    },
+    {
+      "id": "hard_022",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Provider documents a level 5 new patient visit (99205) for a patient who was actually seen 18 months ago (technically a new patient per 3-year rule). Visit is for straightforward hypertension follow-up. Provider copies previous note and changes the date — classic 'cloned note.' Physical exam section is identical word-for-word to 3 prior visits.",
+        "symptoms": ["none — routine follow-up"],
+        "treatments": ["antihypertensive continuation"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "low",
+        "patient_age": 68,
+        "patient_sex": "M",
+        "provider_specialty": "Internal Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": ["hypertension"],
+        "lab_results": "BP: 132/80",
+        "medications": ["amlodipine 5mg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["I10"],
+        "procedure_codes": ["99213"],
+        "decision": "reject",
+        "risk_flags": ["upcoding_risk", "cloned_documentation", "documentation_mismatch", "billing_fraud"]
+      }
+    },
+    {
+      "id": "hard_023",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "40-year-old male with acute ST-elevation MI. Transferred emergently from community hospital. Cardiac cath shows 99% LAD occlusion. Primary PCI with drug-eluting stent performed. Door-to-balloon time 55 minutes. EF post-procedure 35%. Started on dual antiplatelet therapy, high-intensity statin, beta-blocker, ACE inhibitor. Complex case with appropriate coding needed.",
+        "symptoms": ["crushing chest pain", "diaphoresis", "nausea", "dyspnea", "ST elevation on ECG"],
+        "treatments": ["primary PCI with DES", "dual antiplatelet therapy", "GDMT initiation"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 40,
+        "patient_sex": "M",
+        "provider_specialty": "Interventional Cardiology",
+        "visit_type": "inpatient",
+        "comorbidities": ["active smoker", "family history of premature CAD"],
+        "lab_results": "Troponin I: 45.2, ECG: ST elevation V1-V4, Cath: 99% LAD stenosis, EF: 35%",
+        "medications": ["aspirin 325mg", "ticagrelor 90mg BID", "atorvastatin 80mg", "metoprolol 25mg BID", "lisinopril 5mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["I21.01"],
+        "procedure_codes": ["92928", "93458"],
+        "decision": "approve",
+        "risk_flags": ["high_cost_treatment"]
+      }
+    },
+    {
+      "id": "hard_024",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Dermatology clinic performs shave biopsies on 8 benign-appearing lesions in one visit, coding each as a separate diagnostic biopsy rather than as destruction of benign lesions. All lesions are small (<0.5cm) seborrheic keratoses that could be diagnosed clinically. No clinical suspicion of malignancy documented for any lesion.",
+        "symptoms": ["cosmetic concern about skin lesions"],
+        "treatments": ["8 shave biopsies of seborrheic keratoses"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 75,
+        "patient_sex": "M",
+        "provider_specialty": "Dermatology",
+        "visit_type": "outpatient",
+        "comorbidities": [],
+        "lab_results": null,
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["L82.1"],
+        "procedure_codes": ["17110"],
+        "decision": "reject",
+        "risk_flags": ["upcoding_risk", "medically_unnecessary", "unbundling_violation"]
+      }
+    },
+    {
+      "id": "hard_025",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "50-year-old male with cirrhosis (Child-Pugh C) and hepatocellular carcinoma. Single 3cm lesion in right lobe. MELD score 28. Listed for liver transplant. However, recent PET scan shows suspicious pulmonary nodule 1.2cm. Biopsy pending. If metastatic, patient would be delisted from transplant. Provider orders both transplant workup and HCC-directed therapy simultaneously.",
+        "symptoms": ["jaundice", "ascites", "confusion", "fatigue", "weight loss"],
+        "treatments": ["transplant evaluation", "TACE proposed", "lung biopsy pending"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 50,
+        "patient_sex": "M",
+        "provider_specialty": "Hepatology",
+        "visit_type": "inpatient",
+        "comorbidities": ["cirrhosis Child-Pugh C", "HCC", "portal hypertension", "hepatic encephalopathy"],
+        "lab_results": "MELD: 28, AFP: 450, CT: 3cm HCC right lobe, PET: 1.2cm pulmonary nodule, INR: 2.1, Albumin: 2.0",
+        "medications": ["lactulose 30mL TID", "rifaximin 550mg BID", "furosemide 40mg", "spironolactone 100mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["C22.0", "K74.60", "R91.1"],
+        "procedure_codes": ["99223"],
+        "decision": "review",
+        "risk_flags": ["premature_treatment", "pending_diagnostic_results", "high_cost_treatment", "multiple_diagnoses"]
+      }
+    },
+    {
+      "id": "hard_026",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Pain clinic patient receiving monthly epidural steroid injections for 14 consecutive months for chronic low back pain. Guidelines recommend maximum 3-4 per year. No documentation of functional improvement. Patient's pain scores unchanged from baseline. No alternative treatments tried. Provider continues injections citing patient satisfaction.",
+        "symptoms": ["chronic low back pain", "unchanged pain scores 7/10"],
+        "treatments": ["14th monthly epidural steroid injection"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 65,
+        "patient_sex": "F",
+        "provider_specialty": "Pain Medicine",
+        "visit_type": "outpatient",
+        "comorbidities": ["chronic low back pain", "lumbar spondylosis", "osteoporosis"],
+        "lab_results": "MRI lumbar (12 months ago): moderate spondylosis, no acute findings",
+        "medications": ["gabapentin 600mg TID", "acetaminophen 1000mg TID", "duloxetine 60mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["M54.5"],
+        "procedure_codes": ["99214"],
+        "decision": "reject",
+        "risk_flags": ["excessive_treatment", "guideline_violation", "medically_unnecessary", "patient_safety_risk"]
+      }
+    },
+    {
+      "id": "hard_027",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Multispecialty group practice has 3 providers see the same patient on the same day for the same condition and each bills a separate E&M code. Patient with diabetes sees: endocrinologist (99215), diabetic educator (99214), and nutritionist with physician supervision (99213). While each provides a different service, only one E&M is billable per provider group per day.",
+        "symptoms": ["uncontrolled type 2 diabetes"],
+        "treatments": ["medication management", "diabetic education", "nutrition counseling"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "medium",
+        "patient_age": 58,
+        "patient_sex": "M",
+        "provider_specialty": "Endocrinology",
+        "visit_type": "outpatient",
+        "comorbidities": ["type 2 diabetes", "obesity", "hypertension"],
+        "lab_results": "A1C: 10.2%, FBS: 220, Cr: 1.1",
+        "medications": ["metformin 1000mg BID", "glimepiride 4mg daily", "lisinopril 40mg"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["E11.65"],
+        "procedure_codes": ["99215"],
+        "decision": "reject",
+        "risk_flags": ["duplicate_billing", "billing_fraud", "unbundling_violation"]
+      }
+    },
+    {
+      "id": "hard_028",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "45-year-old female with BRCA1 mutation, strong family history (mother and sister with breast cancer). Bilateral prophylactic mastectomy with immediate reconstruction requested. Patient has no current malignancy. MRI and mammogram are negative. Genetic counseling completed. Risk reduction surgery is guideline-concordant for BRCA1 carriers.",
+        "symptoms": [],
+        "treatments": ["bilateral prophylactic mastectomy", "immediate reconstruction"],
+        "insurance_type": "Private",
+        "prior_auth_required": true,
+        "treatment_cost": "high",
+        "patient_age": 45,
+        "patient_sex": "F",
+        "provider_specialty": "General Surgery",
+        "visit_type": "outpatient",
+        "comorbidities": ["BRCA1 positive"],
+        "lab_results": "BRCA1: pathogenic variant detected, Mammogram: BIRADS 1, MRI: negative",
+        "medications": []
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["Z15.01", "Z80.3"],
+        "procedure_codes": ["19303"],
+        "decision": "approve",
+        "risk_flags": ["prophylactic_surgery", "high_cost_treatment", "prior_auth_needed"]
+      }
+    },
+    {
+      "id": "hard_029",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Provider submits claim for robotic-assisted laparoscopic hysterectomy with add-on code for robotic surgical system fee ($3,500). Patient had a straightforward total laparoscopic hysterectomy for menorrhagia with normal-sized uterus. No adhesions, no endometriosis. Operative time 65 minutes. The robotic approach was not medically necessary — standard laparoscopic approach would have been equivalent. Provider routinely uses robot for all cases.",
+        "symptoms": ["menorrhagia", "anemia"],
+        "treatments": ["robotic-assisted laparoscopic hysterectomy"],
+        "insurance_type": "Private",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 47,
+        "patient_sex": "F",
+        "provider_specialty": "Gynecology",
+        "visit_type": "inpatient",
+        "comorbidities": ["iron deficiency anemia"],
+        "lab_results": "Hgb: 9.8, US: normal sized uterus, no fibroids, no masses",
+        "medications": ["ibuprofen 600mg TID", "ferrous sulfate 325mg daily"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["N92.0", "D50.0"],
+        "procedure_codes": ["58570"],
+        "decision": "review",
+        "risk_flags": ["medically_unnecessary", "upcoding_risk", "high_cost_treatment"]
+      }
+    },
+    {
+      "id": "hard_030",
+      "difficulty": "hard",
+      "input": {
+        "clinical_note": "Complex case: 65-year-old male with simultaneous acute STEMI, COVID-19 pneumonia, and acute kidney injury. Troponin 85, ST elevation in II, III, aVF. COVID PCR positive, bilateral infiltrates on CXR, requiring high-flow nasal cannula. Creatinine 3.8 from baseline 1.0. Cardiac cath reveals 100% RCA occlusion — PCI performed emergently. Remdesivir held due to AKI. Nephrology, cardiology, and pulmonology co-managing.",
+        "symptoms": ["chest pain", "dyspnea", "cough", "fever", "oliguria", "hypotension"],
+        "treatments": ["emergent PCI with DES to RCA", "high-flow O2", "dexamethasone", "fluid management", "vasopressors"],
+        "insurance_type": "Medicare",
+        "prior_auth_required": false,
+        "treatment_cost": "high",
+        "patient_age": 65,
+        "patient_sex": "M",
+        "provider_specialty": "Critical Care",
+        "visit_type": "inpatient",
+        "comorbidities": ["hypertension", "type 2 diabetes", "obesity"],
+        "lab_results": "Troponin: 85, ECG: STE II/III/aVF, COVID PCR: positive, CXR: bilateral infiltrates, Cr: 3.8, BUN: 55, K: 5.6, SpO2: 88% on HFNC",
+        "medications": ["heparin drip", "aspirin 325mg", "ticagrelor 180mg load", "dexamethasone 6mg IV", "norepinephrine"]
+      },
+      "ground_truth": {
+        "diagnosis_codes": ["I21.11", "U07.1", "N17.9"],
+        "procedure_codes": ["92928", "93458", "99223"],
+        "decision": "approve",
+        "risk_flags": ["multiple_diagnoses", "high_cost_treatment", "complex_case"]
+      }
+    }
+  ]
+}
