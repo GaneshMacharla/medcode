@@ -254,10 +254,12 @@ def call_llm(client: OpenAI, obs) -> Optional[dict]:
             # Sanitize fields
             if "diagnosis_codes" not in action or not isinstance(action["diagnosis_codes"], list):
                 action["diagnosis_codes"] = [action["diagnosis_codes"]] if isinstance(action.get("diagnosis_codes"), str) else ["R69"]
+            action["diagnosis_codes"] = [str(c) for c in action["diagnosis_codes"][:5]]
             if "procedure_codes" not in action:
                 action["procedure_codes"] = []
             if isinstance(action.get("procedure_codes"), str):
                 action["procedure_codes"] = [action["procedure_codes"]]
+            action["procedure_codes"] = [str(c) for c in action.get("procedure_codes", [])[:5]]
             if "decision" not in action:
                 action["decision"] = "review"
             if action.get("decision", "").lower() not in ("approve", "reject", "review"):
@@ -270,14 +272,17 @@ def call_llm(client: OpenAI, obs) -> Optional[dict]:
                 action["confidence"] = 0.5
             if "reasoning" not in action or len(str(action.get("reasoning", ""))) < 15:
                 action["reasoning"] = "Medical coding assessment based on clinical documentation review and compliance guidelines."
+            action["reasoning"] = str(action["reasoning"])[:500]
             if "modifier_codes" not in action:
                 action["modifier_codes"] = []
             if isinstance(action.get("modifier_codes"), str):
                 action["modifier_codes"] = [action["modifier_codes"]]
+            action["modifier_codes"] = [str(c) for c in action.get("modifier_codes", [])[:3]]
             if "risk_flags" not in action:
                 action["risk_flags"] = []
             if isinstance(action.get("risk_flags"), str):
                 action["risk_flags"] = [action["risk_flags"]]
+            action["risk_flags"] = [str(c) for c in action.get("risk_flags", [])[:5]]
 
             return action
 
