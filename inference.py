@@ -12,6 +12,7 @@ Usage:
 """
 
 import json
+import math
 import os
 import re
 import signal
@@ -47,6 +48,23 @@ MAX_RETRIES = 2
 # Global timeout safety (inference must complete in < 20 minutes)
 MAX_RUNTIME_SECONDS = int(os.environ.get("MAX_RUNTIME_SECONDS", "1100"))  # ~18.3 min
 _start_time = time.time()
+SCORE_EPSILON = 1e-4
+
+
+def to_open_interval_score(value: float) -> float:
+    """Map scores to strict open interval (0, 1) for validator compliance."""
+    try:
+        score = float(value)
+    except (TypeError, ValueError):
+        score = 0.0
+
+    if not math.isfinite(score):
+        score = 0.0
+    if score <= 0.0:
+        return SCORE_EPSILON
+    if score >= 1.0:
+        return 1.0 - SCORE_EPSILON
+    return score
 
 
 class TeeStream:
@@ -321,6 +339,7 @@ def log_start(task_id: str, metadata: Optional[dict] = None):
 
 def log_step(task_id: str, step: int, action: dict, reward: float, done: bool, info: Optional[dict] = None):
     """Emit a [STEP] structured log line."""
+    reward = round(to_open_interval_score(reward), 4)
     entry = {
         "task_id": task_id,
         "step": step,
@@ -335,6 +354,7 @@ def log_step(task_id: str, step: int, action: dict, reward: float, done: bool, i
 
 def log_end(task_id: str, reward: float, metadata: Optional[dict] = None):
     """Emit an [END] structured log line."""
+    reward = round(to_open_interval_score(reward), 4)
     entry = {
         "task_id": task_id,
         "reward": reward,
@@ -416,7 +436,7 @@ def run_evaluation():
             # Step the environment
             try:
                 result_obs = env.step(med_action)
-                score = result_obs.reward if result_obs.reward is not None else 0.0
+                score = to_open_interval_score(result_obs.reward if result_obs.reward is not None else 0.0)
                 done = result_obs.done if result_obs.done is not None else True
                 difficulty_scores.append(score)
                 all_scores.append(score)
@@ -454,8 +474,19 @@ def run_evaluation():
 
             except Exception as e:
                 print(f"    ✗ Step failed: {e}")
-                difficulty_scores.append(0.0)
-                all_scores.append(0.0)
+                fallback_score = to_open_interval_score(0.0)
+                difficulty_scores.append(fallback_score)
+                all_scores.append(fallback_score)
+
+                # ── [STEP] with failure ──
+                log_step(
+                    task_id=task_id,
+                    step=i + 1,
+                    action=action_dict,
+                    reward=fallback_score,
+                    done=True,
+                    info={"error": str(e)},
+                )
 
                 # ── [STEP] with failure ──
                 log_step(

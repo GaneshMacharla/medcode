@@ -18,6 +18,7 @@ Contains: environment logic, deterministic grader, shaped rewards, action valida
 """
 
 import json
+import math
 import os
 import re
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -56,6 +57,23 @@ def _load_task_cases(difficulty: str) -> List[Dict[str, Any]]:
 ICD10_PATTERN = re.compile(r"^[A-Z]\d{2}(\.\d{1,4})?$", re.IGNORECASE)
 CPT_PATTERN = re.compile(r"^\d{5}$")
 HCPCS_PATTERN = re.compile(r"^[A-Z]\d{4}$", re.IGNORECASE)
+SCORE_EPSILON = 1e-4
+
+
+def _to_open_interval_score(value: float) -> float:
+    """Map a score to the strict open interval (0, 1)."""
+    try:
+        score = float(value)
+    except (TypeError, ValueError):
+        score = 0.0
+
+    if not math.isfinite(score):
+        score = 0.0
+    if score <= 0.0:
+        return SCORE_EPSILON
+    if score >= 1.0:
+        return 1.0 - SCORE_EPSILON
+    return score
 
 
 def _validate_action(action_dict: dict) -> Tuple[bool, List[str]]:
@@ -213,7 +231,7 @@ def _grade(action_dict: dict, ground_truth: dict) -> Dict[str, float]:
     )
 
     return {
-        "score": round(min(1.0, max(0.0, total)), 4),
+        "score": round(_to_open_interval_score(total), 4),
         "diagnosis_accuracy": round(diag_score, 4),
         "procedure_accuracy": round(proc_score, 4),
         "decision_accuracy": round(dec_score, 4),
@@ -277,7 +295,7 @@ def _compute_reward(action_dict: dict, ground_truth: dict, difficulty: str = "ea
     diff_mult = {"easy": 0.8, "medium": 1.0, "hard": 1.2}.get(difficulty, 1.0)
     total_penalty = sum(penalties.values()) * diff_mult
     total_bonus = sum(bonuses.values())
-    final = max(0.0, min(1.0, base + total_penalty + total_bonus))
+    final = _to_open_interval_score(base + total_penalty + total_bonus)
 
     feedback_parts = []
     if penalties:
@@ -413,7 +431,11 @@ class MyEnvironment(Environment):
 
         self._current_case = self._pick_case(task_id)
 
-        return self._build_observation(self._current_case, done=False, reward=0.0)
+        return self._build_observation(
+            self._current_case,
+            done=False,
+            reward=_to_open_interval_score(0.0),
+        )
 
     def step(self, action: MedAction) -> MedObservation:  # type: ignore[override]
         """
@@ -429,7 +451,7 @@ class MyEnvironment(Environment):
             return self._build_observation(
                 self._current_case or {},
                 done=True,
-                reward=0.0,
+                reward=_to_open_interval_score(0.0),
                 feedback="Episode already done. Call reset().",
             )
 
@@ -456,7 +478,7 @@ class MyEnvironment(Environment):
             return self._build_observation(
                 self._current_case or {},
                 done=self._done,
-                reward=0.0,
+                reward=_to_open_interval_score(0.0),
                 feedback=f"Invalid action: {'; '.join(errors)}",
             )
 
@@ -467,7 +489,7 @@ class MyEnvironment(Environment):
         self._action_history.append({"action": action_dict, "valid": True})
         self._done = True  # single-step episode for valid actions
 
-        score = reward_result["score"]
+        score = _to_open_interval_score(reward_result["score"])
 
         return self._build_observation(
             self._current_case or {},
