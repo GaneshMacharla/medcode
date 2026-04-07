@@ -17,6 +17,7 @@ import re
 import signal
 import sys
 import time
+from datetime import datetime
 from typing import Optional
 
 from openai import OpenAI
@@ -46,6 +47,57 @@ MAX_RETRIES = 2
 # Global timeout safety (inference must complete in < 20 minutes)
 MAX_RUNTIME_SECONDS = int(os.environ.get("MAX_RUNTIME_SECONDS", "1100"))  # ~18.3 min
 _start_time = time.time()
+
+
+class TeeStream:
+    """Write output to multiple streams (console + log file)."""
+
+    def __init__(self, *streams):
+        self.streams = streams
+
+    def write(self, data):
+        for stream in self.streams:
+            stream.write(data)
+
+    def flush(self):
+        for stream in self.streams:
+            stream.flush()
+
+
+def _resolve_log_path() -> str:
+    """Resolve output log path with timestamped default per run."""
+    configured = os.environ.get("LOG_FILE")
+    if configured:
+        return configured
+
+    log_dir = os.environ.get("LOG_DIR", "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    return os.path.join(log_dir, f"inference_{timestamp}.log")
+
+
+def _rotate_log_if_needed(log_path: str):
+    """Rotate a fixed log file when it exceeds configured size."""
+    max_bytes = int(os.environ.get("LOG_ROTATE_MAX_BYTES", "0"))
+    backups = int(os.environ.get("LOG_ROTATE_BACKUPS", "3"))
+
+    if max_bytes <= 0 or backups <= 0:
+        return
+    if not os.path.exists(log_path):
+        return
+    if os.path.getsize(log_path) < max_bytes:
+        return
+
+    for idx in range(backups, 0, -1):
+        src = f"{log_path}.{idx}"
+        dst = f"{log_path}.{idx + 1}"
+        if os.path.exists(src):
+            if idx == backups:
+                os.remove(src)
+            else:
+                os.replace(src, dst)
+
+    os.replace(log_path, f"{log_path}.1")
 
 
 def _check_timeout():
@@ -463,5 +515,19 @@ def run_evaluation():
 
 
 if __name__ == "__main__":
-    score = run_evaluation()
-    sys.exit(0 if score > 0 else 1)
+    log_path = _resolve_log_path()
+    _rotate_log_if_needed(log_path)
+    log_file = open(log_path, "a", encoding="utf-8")
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
+    sys.stdout = TeeStream(original_stdout, log_file)
+    sys.stderr = TeeStream(original_stderr, log_file)
+
+    print(f"\n[LOG] Writing run output to {log_path}")
+    try:
+        score = run_evaluation()
+        sys.exit(0 if score > 0 else 1)
+    finally:
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+        log_file.close()
