@@ -527,12 +527,25 @@ def run_evaluation():
     print(f"\n  Runtime: {elapsed:.1f}s")
     print(f"{'=' * 70}")
 
-    # Write results to file
+    # Write results to file (final normalization for strict open-interval compliance)
+    normalized_results_by_difficulty = {}
+    for diff, result in results_by_difficulty.items():
+        normalized_scores = [rounded_open_interval_score(s, 4) for s in result.get("scores", [])]
+        normalized_avg = rounded_open_interval_score(
+            (sum(normalized_scores) / len(normalized_scores)) if normalized_scores else 0.0,
+            4,
+        )
+        normalized_results_by_difficulty[diff] = {
+            "scores": normalized_scores,
+            "average": normalized_avg,
+            "count": len(normalized_scores),
+        }
+
     results_output = {
         "model": MODEL_NAME,
         "api_base_url": API_BASE_URL,
         "cases_per_difficulty": CASES_PER_DIFFICULTY,
-        "results_by_difficulty": results_by_difficulty,
+        "results_by_difficulty": normalized_results_by_difficulty,
         "overall_score": rounded_open_interval_score(overall, 4),
         "total_cases": len(all_scores),
         "runtime_seconds": round(elapsed, 1),
