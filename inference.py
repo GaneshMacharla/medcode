@@ -67,6 +67,11 @@ def to_open_interval_score(value: float) -> float:
     return score
 
 
+def rounded_open_interval_score(value: float, ndigits: int = 4) -> float:
+    """Round score for logs/reports while preserving strict (0, 1) bounds."""
+    return to_open_interval_score(round(to_open_interval_score(value), ndigits))
+
+
 class TeeStream:
     """Write output to multiple streams (console + log file)."""
 
@@ -339,7 +344,7 @@ def log_start(task_id: str, metadata: Optional[dict] = None):
 
 def log_step(task_id: str, step: int, action: dict, reward: float, done: bool, info: Optional[dict] = None):
     """Emit a [STEP] structured log line."""
-    reward = round(to_open_interval_score(reward), 4)
+    reward = rounded_open_interval_score(reward, 4)
     entry = {
         "task_id": task_id,
         "step": step,
@@ -354,7 +359,7 @@ def log_step(task_id: str, step: int, action: dict, reward: float, done: bool, i
 
 def log_end(task_id: str, reward: float, metadata: Optional[dict] = None):
     """Emit an [END] structured log line."""
-    reward = round(to_open_interval_score(reward), 4)
+    reward = rounded_open_interval_score(reward, 4)
     entry = {
         "task_id": task_id,
         "reward": reward,
@@ -446,7 +451,7 @@ def run_evaluation():
                     task_id=task_id,
                     step=i + 1,
                     action=action_dict,
-                    reward=round(score, 4),
+                    reward=rounded_open_interval_score(score, 4),
                     done=done,
                     info={
                         "case_id": obs.case_id,
@@ -488,16 +493,6 @@ def run_evaluation():
                     info={"error": str(e)},
                 )
 
-                # ── [STEP] with failure ──
-                log_step(
-                    task_id=task_id,
-                    step=i + 1,
-                    action=action_dict,
-                    reward=0.0,
-                    done=True,
-                    info={"error": str(e)},
-                )
-
             # Rate limiting
             time.sleep(0.5)
 
@@ -505,7 +500,7 @@ def run_evaluation():
             avg = sum(difficulty_scores) / len(difficulty_scores)
             results_by_difficulty[difficulty] = {
                 "scores": difficulty_scores,
-                "average": round(avg, 4),
+                "average": rounded_open_interval_score(avg, 4),
                 "count": len(difficulty_scores),
             }
             print(f"\n  {difficulty.upper()} Average: {avg:.4f} ({len(difficulty_scores)} cases)")
@@ -538,7 +533,7 @@ def run_evaluation():
         "api_base_url": API_BASE_URL,
         "cases_per_difficulty": CASES_PER_DIFFICULTY,
         "results_by_difficulty": results_by_difficulty,
-        "overall_score": round(overall, 4),
+        "overall_score": rounded_open_interval_score(overall, 4),
         "total_cases": len(all_scores),
         "runtime_seconds": round(elapsed, 1),
     }

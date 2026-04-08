@@ -76,6 +76,11 @@ def _to_open_interval_score(value: float) -> float:
     return score
 
 
+def _rounded_open_interval_score(value: float, ndigits: int = 4) -> float:
+    """Round score while preserving strict open interval bounds."""
+    return _to_open_interval_score(round(_to_open_interval_score(value), ndigits))
+
+
 def _validate_action(action_dict: dict) -> Tuple[bool, List[str]]:
     """Validate an action dict. Returns (is_valid, error_list)."""
     errors: List[str] = []
@@ -231,7 +236,7 @@ def _grade(action_dict: dict, ground_truth: dict) -> Dict[str, float]:
     )
 
     return {
-        "score": round(_to_open_interval_score(total), 4),
+        "score": _rounded_open_interval_score(total, 4),
         "diagnosis_accuracy": round(diag_score, 4),
         "procedure_accuracy": round(proc_score, 4),
         "decision_accuracy": round(dec_score, 4),
@@ -306,7 +311,7 @@ def _compute_reward(action_dict: dict, ground_truth: dict, difficulty: str = "ea
         feedback_parts.append("Clean submission.")
 
     return {
-        "score": round(final, 4),
+        "score": _rounded_open_interval_score(final, 4),
         "breakdown": {
             "base_grade": round(base, 4),
             "total_penalty": round(total_penalty, 4),
