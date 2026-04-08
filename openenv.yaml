@@ -64,7 +64,7 @@ observation_space:
 
 reward_space:
   type: float
-  range: [0.0, 1.0]
+  range: [0.0001, 0.9999]
   description: >
     Deterministic composite score: diagnosis accuracy (35%),
     procedure accuracy (20%), decision accuracy (25%),

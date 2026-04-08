@@ -81,6 +81,11 @@ def _rounded_open_interval_score(value: float, ndigits: int = 4) -> float:
     return _to_open_interval_score(round(_to_open_interval_score(value), ndigits))
 
 
+def _rounded_component_score(value: float, ndigits: int = 4) -> float:
+    """Normalize component scores to strict open interval for validator safety."""
+    return _rounded_open_interval_score(value, ndigits)
+
+
 def _validate_action(action_dict: dict) -> Tuple[bool, List[str]]:
     """Validate an action dict. Returns (is_valid, error_list)."""
     errors: List[str] = []
@@ -237,12 +242,12 @@ def _grade(action_dict: dict, ground_truth: dict) -> Dict[str, float]:
 
     return {
         "score": _rounded_open_interval_score(total, 4),
-        "diagnosis_accuracy": round(diag_score, 4),
-        "procedure_accuracy": round(proc_score, 4),
-        "decision_accuracy": round(dec_score, 4),
-        "reasoning_quality": round(r_score, 4),
-        "risk_identification": round(risk_score, 4),
-        "confidence_calibration": round(conf_score, 4),
+        "diagnosis_accuracy": _rounded_component_score(diag_score, 4),
+        "procedure_accuracy": _rounded_component_score(proc_score, 4),
+        "decision_accuracy": _rounded_component_score(dec_score, 4),
+        "reasoning_quality": _rounded_component_score(r_score, 4),
+        "risk_identification": _rounded_component_score(risk_score, 4),
+        "confidence_calibration": _rounded_component_score(conf_score, 4),
     }
 
 
