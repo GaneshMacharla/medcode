@@ -57,7 +57,7 @@ def _load_task_cases(difficulty: str) -> List[Dict[str, Any]]:
 ICD10_PATTERN = re.compile(r"^[A-Z]\d{2}(\.\d{1,4})?$", re.IGNORECASE)
 CPT_PATTERN = re.compile(r"^\d{5}$")
 HCPCS_PATTERN = re.compile(r"^[A-Z]\d{4}$", re.IGNORECASE)
-SCORE_EPSILON = 1e-4
+SCORE_EPSILON = 0.001
 
 
 def _to_open_interval_score(value: float) -> float:
@@ -392,6 +392,9 @@ class MyEnvironment(Environment):
                            reward: Optional[float] = None,
                            reward_breakdown: Optional[Dict] = None,
                            feedback: str = "") -> MedObservation:
+        # Final safety clamp: ensure reward is always strictly in (0, 1)
+        if reward is not None:
+            reward = _to_open_interval_score(reward)
         """Build a MedObservation from a case dict."""
         inp = case.get("input", case)
         return MedObservation(
