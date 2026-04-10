@@ -48,7 +48,7 @@ MAX_RETRIES = 2
 # Global timeout safety (inference must complete in < 20 minutes)
 MAX_RUNTIME_SECONDS = int(os.environ.get("MAX_RUNTIME_SECONDS", "1100"))  # ~18.3 min
 _start_time = time.time()
-SCORE_EPSILON = 1e-4
+SCORE_EPSILON = 0.001
 
 
 def to_open_interval_score(value: float) -> float:
@@ -506,7 +506,7 @@ def run_evaluation():
             print(f"\n  {difficulty.upper()} Average: {avg:.4f} ({len(difficulty_scores)} cases)")
 
             # ── [END] ──
-            log_end(task_id, round(avg, 4), {"num_cases": len(difficulty_scores)})
+            log_end(task_id, rounded_open_interval_score(avg, 4), {"num_cases": len(difficulty_scores)})
 
     # Final summary
     print(f"\n{'=' * 70}")
