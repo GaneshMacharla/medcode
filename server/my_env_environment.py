@@ -57,11 +57,14 @@ def _load_task_cases(difficulty: str) -> List[Dict[str, Any]]:
 ICD10_PATTERN = re.compile(r"^[A-Z]\d{2}(\.\d{1,4})?$", re.IGNORECASE)
 CPT_PATTERN = re.compile(r"^\d{5}$")
 HCPCS_PATTERN = re.compile(r"^[A-Z]\d{4}$", re.IGNORECASE)
-SCORE_EPSILON = 1e-4
+SCORE_EPSILON = 1e-3
 
 
 def _to_open_interval_score(value: float) -> float:
-    """Map a score to the strict open interval (0, 1)."""
+    """Map a score to the strict open interval (0, 1).
+
+    Guarantees the returned value satisfies  0 < value < 1.
+    """
     try:
         score = float(value)
     except (TypeError, ValueError):
@@ -69,16 +72,18 @@ def _to_open_interval_score(value: float) -> float:
 
     if not math.isfinite(score):
         score = 0.0
-    if score <= 0.0:
-        return SCORE_EPSILON
-    if score >= 1.0:
-        return 1.0 - SCORE_EPSILON
+
+    # Clamp into the safe open interval (SCORE_EPSILON, 1 - SCORE_EPSILON)
+    score = max(SCORE_EPSILON, min(1.0 - SCORE_EPSILON, score))
     return score
 
 
 def _rounded_open_interval_score(value: float, ndigits: int = 4) -> float:
     """Round score while preserving strict open interval bounds."""
-    return _to_open_interval_score(round(_to_open_interval_score(value), ndigits))
+    clamped = _to_open_interval_score(value)
+    rounded = round(clamped, ndigits)
+    # Re-clamp after rounding to guarantee strict (0, 1)
+    return _to_open_interval_score(rounded)
 
 
 def _rounded_component_score(value: float, ndigits: int = 4) -> float:
