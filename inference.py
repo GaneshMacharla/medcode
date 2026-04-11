@@ -48,7 +48,7 @@ MAX_RETRIES = 2
 # Global timeout safety (inference must complete in < 20 minutes)
 MAX_RUNTIME_SECONDS = int(os.environ.get("MAX_RUNTIME_SECONDS", "1100"))  # ~18.3 min
 _start_time = time.time()
-SCORE_EPSILON = 1e-3
+SCORE_EPSILON = 0.01
 
 
 def to_open_interval_score(value: float) -> float:

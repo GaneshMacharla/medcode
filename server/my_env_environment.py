@@ -57,7 +57,7 @@ def _load_task_cases(difficulty: str) -> List[Dict[str, Any]]:
 ICD10_PATTERN = re.compile(r"^[A-Z]\d{2}(\.\d{1,4})?$", re.IGNORECASE)
 CPT_PATTERN = re.compile(r"^\d{5}$")
 HCPCS_PATTERN = re.compile(r"^[A-Z]\d{4}$", re.IGNORECASE)
-SCORE_EPSILON = 1e-3
+SCORE_EPSILON = 0.01
 
 
 def _to_open_interval_score(value: float) -> float:
