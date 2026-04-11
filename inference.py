@@ -48,11 +48,14 @@ MAX_RETRIES = 2
 # Global timeout safety (inference must complete in < 20 minutes)
 MAX_RUNTIME_SECONDS = int(os.environ.get("MAX_RUNTIME_SECONDS", "1100"))  # ~18.3 min
 _start_time = time.time()
-SCORE_EPSILON = 1e-4
+SCORE_EPSILON = 1e-3
 
 
 def to_open_interval_score(value: float) -> float:
-    """Map scores to strict open interval (0, 1) for validator compliance."""
+    """Map scores to strict open interval (0, 1) for validator compliance.
+
+    Guarantees the returned value satisfies  0 < value < 1.
+    """
     try:
         score = float(value)
     except (TypeError, ValueError):
@@ -60,16 +63,18 @@ def to_open_interval_score(value: float) -> float:
 
     if not math.isfinite(score):
         score = 0.0
-    if score <= 0.0:
-        return SCORE_EPSILON
-    if score >= 1.0:
-        return 1.0 - SCORE_EPSILON
+
+    # Clamp into the safe open interval (SCORE_EPSILON, 1 - SCORE_EPSILON)
+    score = max(SCORE_EPSILON, min(1.0 - SCORE_EPSILON, score))
     return score
 
 
 def rounded_open_interval_score(value: float, ndigits: int = 4) -> float:
     """Round score for logs/reports while preserving strict (0, 1) bounds."""
-    return to_open_interval_score(round(to_open_interval_score(value), ndigits))
+    clamped = to_open_interval_score(value)
+    rounded = round(clamped, ndigits)
+    # Re-clamp after rounding to guarantee strict (0, 1)
+    return to_open_interval_score(rounded)
 
 
 class TeeStream:
