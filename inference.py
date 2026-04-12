@@ -348,44 +348,26 @@ def get_fallback_action() -> dict:
 #  Structured logging helpers — [START] [STEP] [END]
 # ──────────────────────────────────────────────
 
-def log_start(task_id: str, metadata: Optional[dict] = None):
-    """Emit a [START] structured log line."""
-    entry = {"task_id": task_id}
-    if metadata:
-        entry.update(metadata)
-    print(f"[START] {json.dumps(entry)}", flush=True)
+def log_start(task_name: str, env_name: str, model_name: str):
+    """Emit a [START] structured log line according to Hackathon rules."""
+    print(f"[START] task={task_name} env={env_name} model={model_name}", flush=True)
 
 
-def log_step(task_id: str, step: int, action: dict, reward: float, done: bool, info: Optional[dict] = None):
-    """Emit a [STEP] structured log line."""
+def log_step(step_idx: int, action: dict, reward: float, done: bool, error_msg: Optional[str] = None):
+    """Emit a [STEP] structured log line according to Hackathon rules."""
     reward = rounded_open_interval_score(reward, 4)
-    entry = {
-        "task_id": task_id,
-        "step": step,
-        "action": action,
-        "reward": reward,
-        "done": done,
-    }
-    if info:
-        entry["info"] = info
-    print(f"[STEP] {json.dumps(entry)}", flush=True)
+    action_str = json.dumps(action, separators=(',', ':')).replace('\n', '')
+    err_str = f'"{error_msg}"' if error_msg else "null"
+    done_str = "true" if done else "false"
+    print(f"[STEP] step={step_idx} action={action_str} reward={reward:.2f} done={done_str} error={err_str}", flush=True)
 
 
-def log_end(task_id: str, reward: float, metadata: Optional[dict] = None):
-    """Emit an [END] structured log line."""
-    reward = rounded_open_interval_score(reward, 4)
-    metadata = dict(metadata or {})
-    if not is_strict_open_interval(reward):
-        reward = rounded_open_interval_score(0.0, 4)
-        metadata["score_sanitized"] = True
-
-    entry = {
-        "task_id": task_id,
-        "reward": reward,
-    }
-    if metadata:
-        entry.update(metadata)
-    print(f"[END] {json.dumps(entry)}", flush=True)
+def log_end(success: bool, steps: int, rewards: list[float]):
+    """Emit an [END] structured log line according to Hackathon rules."""
+    succ_str = "true" if success else "false"
+    # Ensure any printed rewards strictly match the rules
+    rews_str = ",".join([f"{rounded_open_interval_score(r, 4):.2f}" for r in rewards])
+    print(f"[END] success={succ_str} steps={steps} rewards={rews_str}", flush=True)
 
 
 # ──────────────────────────────────────────────
@@ -424,10 +406,7 @@ def run_evaluation():
                 "count": 0,
             }
 
-            # Emit structured task-level logs even when empty, so validators
-            # never infer an implicit 0.0 score for a missing task.
-            log_start(task_id, {"model": MODEL_NAME, "num_cases": 0})
-            log_end(task_id, fallback_task_score, {"num_cases": 0, "skipped": "no_cases"})
+            # We skip logging start/end here because the validator wants them per-episode.
             task_ended = True
             continue
 
@@ -440,13 +419,11 @@ def run_evaluation():
                 "average": fallback_task_score,
                 "count": 0,
             }
-            log_start(task_id, {"model": MODEL_NAME, "num_cases": 0})
-            log_end(task_id, fallback_task_score, {"num_cases": 0, "skipped": "timeout"})
+            # Skipped due to timeout
             task_ended = True
             continue
 
-        # ── [START] ──
-        log_start(task_id, {"model": MODEL_NAME, "num_cases": num_cases})
+        # Episodes start within the loop below
 
         print(f"\n{'─' * 50}")
         print(f"  Running {difficulty.upper()} tasks")
@@ -462,6 +439,12 @@ def run_evaluation():
 
                 # Reset environment for this difficulty
                 obs = env.reset(task_id=difficulty)
+                
+                case_name = obs.case_id if obs.case_id else f"{difficulty}_{i+1}"
+                
+                # ── [START] EPISODE ──
+                log_start(task_name=case_name, env_name="medcoderl", model_name=MODEL_NAME)
+                episode_rewards = []
                 print(f"\n  Case {i+1}/{num_cases}: {obs.case_id}")
 
                 # Get LLM action
@@ -489,17 +472,15 @@ def run_evaluation():
                     difficulty_scores.append(score)
                     all_scores.append(score)
 
+                    episode_rewards.append(score)
+
                     # ── [STEP] ──
                     log_step(
-                        task_id=task_id,
-                        step=i + 1,
+                        step_idx=1,
                         action=action_dict,
-                        reward=rounded_open_interval_score(score, 4),
+                        reward=score,
                         done=done,
-                        info={
-                            "case_id": obs.case_id,
-                            "feedback": result_obs.feedback if result_obs.feedback else None,
-                        },
+                        error_msg=None
                     )
 
                     print(f"    Score: {score:.4f}")
@@ -526,16 +507,20 @@ def run_evaluation():
                     difficulty_scores.append(fallback_score)
                     all_scores.append(fallback_score)
 
+                    episode_rewards.append(fallback_score)
+
                     # ── [STEP] with failure ──
                     log_step(
-                        task_id=task_id,
-                        step=i + 1,
+                        step_idx=1,
                         action=action_dict,
                         reward=fallback_score,
                         done=True,
-                        info={"error": str(e)},
+                        error_msg=str(e)
                     )
 
+                # ── [END] EPISODE ──
+                log_end(success=True, steps=1, rewards=episode_rewards)
+                
                 # Rate limiting
                 time.sleep(0.5)
 
@@ -548,9 +533,6 @@ def run_evaluation():
                     "count": len(difficulty_scores),
                 }
                 print(f"\n  {difficulty.upper()} Average: {avg:.4f} ({len(difficulty_scores)} cases)")
-
-                # ── [END] ──
-                log_end(task_id, normalized_avg, {"num_cases": len(difficulty_scores)})
                 task_ended = True
             else:
                 # If a tier is interrupted before any scored step, still emit
@@ -562,7 +544,6 @@ def run_evaluation():
                     "count": 0,
                 }
                 print(f"\n  {difficulty.upper()} Average: {fallback_task_score:.4f} (0 cases)")
-                log_end(task_id, fallback_task_score, {"num_cases": 0, "skipped": "no_scored_cases"})
                 task_ended = True
         except Exception as difficulty_error:
             print(f"\n  ✗ Difficulty '{difficulty}' failed unexpectedly: {difficulty_error}")
@@ -573,11 +554,6 @@ def run_evaluation():
                 "count": 0,
             }
             if not task_ended:
-                log_end(
-                    task_id,
-                    fallback_task_score,
-                    {"num_cases": 0, "skipped": "difficulty_exception", "error": str(difficulty_error)},
-                )
                 task_ended = True
 
     # Final summary
