@@ -77,6 +77,15 @@ def rounded_open_interval_score(value: float, ndigits: int = 4) -> float:
     return to_open_interval_score(rounded)
 
 
+def is_strict_open_interval(value: float) -> bool:
+    """Return True if value is strictly between 0 and 1 and finite."""
+    try:
+        score = float(value)
+    except (TypeError, ValueError):
+        return False
+    return math.isfinite(score) and 0.0 < score < 1.0
+
+
 class TeeStream:
     """Write output to multiple streams (console + log file)."""
 
@@ -365,6 +374,11 @@ def log_step(task_id: str, step: int, action: dict, reward: float, done: bool, i
 def log_end(task_id: str, reward: float, metadata: Optional[dict] = None):
     """Emit an [END] structured log line."""
     reward = rounded_open_interval_score(reward, 4)
+    metadata = dict(metadata or {})
+    if not is_strict_open_interval(reward):
+        reward = rounded_open_interval_score(0.0, 4)
+        metadata["score_sanitized"] = True
+
     entry = {
         "task_id": task_id,
         "reward": reward,
@@ -399,14 +413,37 @@ def run_evaluation():
         task_id = difficulty
         available = len(env._task_cases.get(difficulty, []))
         num_cases = min(CASES_PER_DIFFICULTY, available)
+        task_ended = False
 
         if num_cases == 0:
             print(f"  No cases available for {difficulty}")
+            fallback_task_score = rounded_open_interval_score(0.0, 4)
+            results_by_difficulty[difficulty] = {
+                "scores": [],
+                "average": fallback_task_score,
+                "count": 0,
+            }
+
+            # Emit structured task-level logs even when empty, so validators
+            # never infer an implicit 0.0 score for a missing task.
+            log_start(task_id, {"model": MODEL_NAME, "num_cases": 0})
+            log_end(task_id, fallback_task_score, {"num_cases": 0, "skipped": "no_cases"})
+            task_ended = True
             continue
 
         # Check timeout before starting a difficulty tier
         if _check_timeout():
-            break
+            print(f"  Skipping {difficulty} due to runtime limit.")
+            fallback_task_score = rounded_open_interval_score(0.0, 4)
+            results_by_difficulty[difficulty] = {
+                "scores": [],
+                "average": fallback_task_score,
+                "count": 0,
+            }
+            log_start(task_id, {"model": MODEL_NAME, "num_cases": 0})
+            log_end(task_id, fallback_task_score, {"num_cases": 0, "skipped": "timeout"})
+            task_ended = True
+            continue
 
         # ── [START] ──
         log_start(task_id, {"model": MODEL_NAME, "num_cases": num_cases})
@@ -417,101 +454,131 @@ def run_evaluation():
 
         difficulty_scores = []
 
-        for i in range(num_cases):
-            # Check timeout before each case
-            if _check_timeout():
-                break
+        try:
+            for i in range(num_cases):
+                # Check timeout before each case
+                if _check_timeout():
+                    break
 
-            # Reset environment for this difficulty
-            obs = env.reset(task_id=difficulty)
-            print(f"\n  Case {i+1}/{num_cases}: {obs.case_id}")
+                # Reset environment for this difficulty
+                obs = env.reset(task_id=difficulty)
+                print(f"\n  Case {i+1}/{num_cases}: {obs.case_id}")
 
-            # Get LLM action
-            action_dict = call_llm(client, obs)
-            if action_dict is None:
-                print("    ⚠ LLM failed, using fallback action")
-                action_dict = get_fallback_action()
+                # Get LLM action
+                action_dict = call_llm(client, obs)
+                if action_dict is None:
+                    print("    ⚠ LLM failed, using fallback action")
+                    action_dict = get_fallback_action()
 
-            # Build MedAction
-            med_action = MedAction(
-                diagnosis_codes=action_dict["diagnosis_codes"],
-                procedure_codes=action_dict.get("procedure_codes", []),
-                decision=action_dict["decision"],
-                confidence=action_dict["confidence"],
-                reasoning=action_dict["reasoning"],
-                modifier_codes=action_dict.get("modifier_codes", []),
-                risk_flags=action_dict.get("risk_flags", []),
-            )
-
-            # Step the environment
-            try:
-                result_obs = env.step(med_action)
-                score = to_open_interval_score(result_obs.reward if result_obs.reward is not None else 0.0)
-                done = result_obs.done if result_obs.done is not None else True
-                difficulty_scores.append(score)
-                all_scores.append(score)
-
-                # ── [STEP] ──
-                log_step(
-                    task_id=task_id,
-                    step=i + 1,
-                    action=action_dict,
-                    reward=rounded_open_interval_score(score, 4),
-                    done=done,
-                    info={
-                        "case_id": obs.case_id,
-                        "feedback": result_obs.feedback if result_obs.feedback else None,
-                    },
+                # Build MedAction
+                med_action = MedAction(
+                    diagnosis_codes=action_dict["diagnosis_codes"],
+                    procedure_codes=action_dict.get("procedure_codes", []),
+                    decision=action_dict["decision"],
+                    confidence=action_dict["confidence"],
+                    reasoning=action_dict["reasoning"],
+                    modifier_codes=action_dict.get("modifier_codes", []),
+                    risk_flags=action_dict.get("risk_flags", []),
                 )
 
-                print(f"    Score: {score:.4f}")
-                print(f"    Decision: {action_dict.get('decision', 'N/A')}")
-                print(f"    Diagnosis: {action_dict.get('diagnosis_codes', [])}")
-                print(f"    Procedure: {action_dict.get('procedure_codes', [])}")
+                # Step the environment
+                try:
+                    result_obs = env.step(med_action)
+                    score = to_open_interval_score(result_obs.reward if result_obs.reward is not None else 0.0)
+                    done = result_obs.done if result_obs.done is not None else True
+                    difficulty_scores.append(score)
+                    all_scores.append(score)
 
-                if result_obs.reward_breakdown:
-                    gc = result_obs.reward_breakdown.get("grade_components", {})
-                    if gc:
-                        print(f"    Components: diag={gc.get('diagnosis_accuracy', 0):.2f} "
-                              f"proc={gc.get('procedure_accuracy', 0):.2f} "
-                              f"dec={gc.get('decision_accuracy', 0):.2f}")
-                    pens = result_obs.reward_breakdown.get("penalties", {})
-                    if pens:
-                        print(f"    Penalties: {list(pens.keys())}")
+                    # ── [STEP] ──
+                    log_step(
+                        task_id=task_id,
+                        step=i + 1,
+                        action=action_dict,
+                        reward=rounded_open_interval_score(score, 4),
+                        done=done,
+                        info={
+                            "case_id": obs.case_id,
+                            "feedback": result_obs.feedback if result_obs.feedback else None,
+                        },
+                    )
 
-                if result_obs.feedback:
-                    print(f"    Feedback: {result_obs.feedback}")
+                    print(f"    Score: {score:.4f}")
+                    print(f"    Decision: {action_dict.get('decision', 'N/A')}")
+                    print(f"    Diagnosis: {action_dict.get('diagnosis_codes', [])}")
+                    print(f"    Procedure: {action_dict.get('procedure_codes', [])}")
 
-            except Exception as e:
-                print(f"    ✗ Step failed: {e}")
-                fallback_score = to_open_interval_score(0.0)
-                difficulty_scores.append(fallback_score)
-                all_scores.append(fallback_score)
+                    if result_obs.reward_breakdown:
+                        gc = result_obs.reward_breakdown.get("grade_components", {})
+                        if gc:
+                            print(f"    Components: diag={gc.get('diagnosis_accuracy', 0):.2f} "
+                                  f"proc={gc.get('procedure_accuracy', 0):.2f} "
+                                  f"dec={gc.get('decision_accuracy', 0):.2f}")
+                        pens = result_obs.reward_breakdown.get("penalties", {})
+                        if pens:
+                            print(f"    Penalties: {list(pens.keys())}")
 
-                # ── [STEP] with failure ──
-                log_step(
-                    task_id=task_id,
-                    step=i + 1,
-                    action=action_dict,
-                    reward=fallback_score,
-                    done=True,
-                    info={"error": str(e)},
-                )
+                    if result_obs.feedback:
+                        print(f"    Feedback: {result_obs.feedback}")
 
-            # Rate limiting
-            time.sleep(0.5)
+                except Exception as e:
+                    print(f"    ✗ Step failed: {e}")
+                    fallback_score = to_open_interval_score(0.0)
+                    difficulty_scores.append(fallback_score)
+                    all_scores.append(fallback_score)
 
-        if difficulty_scores:
-            avg = sum(difficulty_scores) / len(difficulty_scores)
+                    # ── [STEP] with failure ──
+                    log_step(
+                        task_id=task_id,
+                        step=i + 1,
+                        action=action_dict,
+                        reward=fallback_score,
+                        done=True,
+                        info={"error": str(e)},
+                    )
+
+                # Rate limiting
+                time.sleep(0.5)
+
+            if difficulty_scores:
+                avg = sum(difficulty_scores) / len(difficulty_scores)
+                normalized_avg = rounded_open_interval_score(avg, 4)
+                results_by_difficulty[difficulty] = {
+                    "scores": difficulty_scores,
+                    "average": normalized_avg,
+                    "count": len(difficulty_scores),
+                }
+                print(f"\n  {difficulty.upper()} Average: {avg:.4f} ({len(difficulty_scores)} cases)")
+
+                # ── [END] ──
+                log_end(task_id, normalized_avg, {"num_cases": len(difficulty_scores)})
+                task_ended = True
+            else:
+                # If a tier is interrupted before any scored step, still emit
+                # a valid task score inside (0, 1) to satisfy strict validators.
+                fallback_task_score = rounded_open_interval_score(0.0, 4)
+                results_by_difficulty[difficulty] = {
+                    "scores": [],
+                    "average": fallback_task_score,
+                    "count": 0,
+                }
+                print(f"\n  {difficulty.upper()} Average: {fallback_task_score:.4f} (0 cases)")
+                log_end(task_id, fallback_task_score, {"num_cases": 0, "skipped": "no_scored_cases"})
+                task_ended = True
+        except Exception as difficulty_error:
+            print(f"\n  ✗ Difficulty '{difficulty}' failed unexpectedly: {difficulty_error}")
+            fallback_task_score = rounded_open_interval_score(0.0, 4)
             results_by_difficulty[difficulty] = {
-                "scores": difficulty_scores,
-                "average": rounded_open_interval_score(avg, 4),
-                "count": len(difficulty_scores),
+                "scores": [],
+                "average": fallback_task_score,
+                "count": 0,
             }
-            print(f"\n  {difficulty.upper()} Average: {avg:.4f} ({len(difficulty_scores)} cases)")
-
-            # ── [END] ──
-            log_end(task_id, round(avg, 4), {"num_cases": len(difficulty_scores)})
+            if not task_ended:
+                log_end(
+                    task_id,
+                    fallback_task_score,
+                    {"num_cases": 0, "skipped": "difficulty_exception", "error": str(difficulty_error)},
+                )
+                task_ended = True
 
     # Final summary
     print(f"\n{'=' * 70}")
@@ -525,8 +592,8 @@ def run_evaluation():
         overall = sum(all_scores) / len(all_scores)
         print(f"\n  {'OVERALL':>8}: {overall:.4f}  ({len(all_scores)} total cases)")
     else:
-        overall = 0.0
-        print("\n  No scores recorded.")
+        overall = rounded_open_interval_score(0.0, 4)
+        print("\n  No scores recorded; using safe fallback overall score.")
 
     elapsed = time.time() - _start_time
     print(f"\n  Runtime: {elapsed:.1f}s")
