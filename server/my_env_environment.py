@@ -323,11 +323,7 @@ def _compute_reward(action_dict: dict, ground_truth: dict, difficulty: str = "ea
     return {
         "score": _rounded_open_interval_score(final, 4),
         "breakdown": {
-            "base_grade": round(base, 4),
-            "total_penalty": round(total_penalty, 4),
-            "total_bonus": round(total_bonus, 4),
-            "penalties": {k: round(v, 4) for k, v in penalties.items()},
-            "bonuses": {k: round(v, 4) for k, v in bonuses.items()},
+            "base_grade": _rounded_open_interval_score(base, 4),
             "grade_components": grade_result,
         },
         "feedback": " | ".join(feedback_parts),

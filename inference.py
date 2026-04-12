@@ -258,8 +258,6 @@ Guidelines:
 
 IMPORTANT: Respond ONLY with the JSON object, no additional text.
 """
-
-
 def call_llm(client: OpenAI, obs) -> Optional[dict]:
     """Call the LLM to get a coding decision for a clinical case."""
     formatted = format_observation(obs)
@@ -277,6 +275,7 @@ def call_llm(client: OpenAI, obs) -> Optional[dict]:
             )
 
             content = response.choices[0].message.content
+
             if not content:
                 print(f"  [Attempt {attempt+1}] Empty response from LLM")
                 continue
@@ -304,7 +303,8 @@ def call_llm(client: OpenAI, obs) -> Optional[dict]:
             if "confidence" not in action:
                 action["confidence"] = 0.5
             try:
-                action["confidence"] = max(0.0, min(1.0, float(action["confidence"])))
+                # Clamp to strict open interval (0.01, 0.99) to satisfy strict score validators
+                action["confidence"] = max(0.01, min(0.99, float(action["confidence"])))
             except (TypeError, ValueError):
                 action["confidence"] = 0.5
             if "reasoning" not in action or len(str(action.get("reasoning", ""))) < 15:
